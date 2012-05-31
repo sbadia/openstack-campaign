@@ -1,4 +1,2 @@
 # MANAGED BY PUPPET
-# apt-mirror on apt.sebian.fr
-# deb http://apt.puppetlabs.com/debian/ squeeze main
-deb http://apt.sebian.fr/puppet squeeze main
+deb http://apt.puppetlabs.com/ precise main

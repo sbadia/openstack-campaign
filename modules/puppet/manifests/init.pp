@@ -59,7 +59,7 @@ class puppet::base {
 #
 class puppet::master inherits puppet::base {
   package {
-    ["puppetmaster-passenger","mysql-server","libmysql-ruby","build-essential","libmysqlclient-dev"]:
+    ["puppetmaster-passenger","libmysql-ruby","build-essential","libmysqlclient-dev"]:
       ensure => installed,
       require => [File["source puppetlabs"],Exec["sources update"]];
     "mysql":
@@ -78,7 +78,6 @@ class puppet::master inherits puppet::base {
       user => 'puppet',
       password => 'puppet',
       host => 'localhost',
-      grant => ['all'],
-      require => Class['mysql::server'];
+      grant => ['all'];
   }
 } # Class:: puppet::master inherits puppet::base
