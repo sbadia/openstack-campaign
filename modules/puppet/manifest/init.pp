@@ -21,9 +21,9 @@ class puppet::base {
       require => [File["source puppetlabs"],Exec["sources update"]];
   }
 
-  include "apt::allowunauthenticated"
+  include "uapt::allowunauthenticated"
 
-  apt::source {
+  uapt::source {
     "puppetlabs":
       source => "puppet:///modules/puppet/repo/puppetlabs.list",
       unauth => true;
@@ -72,4 +72,13 @@ class puppet::master inherits puppet::base {
   }
 
   File["/etc/puppet/puppet.conf"] { source  => "puppet:///modules/puppet/master/puppet.conf" }
+
+  mysql::db {
+    "puppet":
+      user => 'puppet',
+      password => 'puppet',
+      host => 'localhost',
+      grant => ['all'],
+      require => Class['mysql::server'];
+  }
 } # Class:: puppet::master inherits puppet::base
