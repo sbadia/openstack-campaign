@@ -59,7 +59,7 @@ class puppet::base {
 #
 class puppet::master inherits puppet::base {
   package {
-    ["puppetmaster-passenger","libmysql-ruby","build-essential","libmysqlclient-dev"]:
+    ["puppetmaster","libmysql-ruby","build-essential","libmysqlclient-dev"]:
       ensure => installed,
       require => [File["source puppetlabs"],Exec["sources update"]];
     "mysql":
@@ -79,5 +79,29 @@ class puppet::master inherits puppet::base {
       password => 'puppet',
       host => 'localhost',
       grant => ['all'];
+   }
+
+  file {
+    "/etc/puppet/manifests/site.pp":
+      source  => "puppet:///modules/puppet/master/site.pp",
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => 644,
+      require => Package["puppetmaster"];
   }
 } # Class:: puppet::master inherits puppet::base
+
+# Class:: puppet::client inherits puppet::base
+#
+#
+class puppet::client inherits puppet::base {
+  #include 'custom'
+  #line {
+  #  puppetmaster:
+  #    file => "/etc/puppet/puppet.conf",
+  #    line => "server = $master";
+  #}
+
+  File["/etc/puppet/puppet.conf"] { content  => template("puppet/client.conf.erb") }
+} # Class:: puppet::client inherits puppet::base
