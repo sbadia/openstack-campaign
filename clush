@@ -1,0 +1,9 @@
+oarsub -t deploy -l {"type='kavlan'"}/vlan=1+/nodes=10,walltime=7:00:00 -r "2012-05-10 12:00:00" -n "openstack"
+kadeploy3 -f $OAR_NODEFILE -e ubuntu-x64-1204 -k .ssh/id_dsa.pub --vlan `kavlan -V`
+clush -l root -w $(nodeset -f $(kavlan -l)) 'apt-get update && apt-get dist-upgrade -y --force-yes && apt-get install rake puppet git multitail -y --force-yes'
+ssh -l root $(kavlan -l |head -1) 'apt-get install puppetmaster -y'
+clush -l root -w $(nodeset -f $(kavlan -l)) "puppetd -t --server=$(kavlan -l |head -1)"
+ssh -l root $(kavlan -l |head -1) 'puppetca --sign --all'
+ssh root@graphene-11-kavlan-4 'puppetca --sign --all'
+clush -l root -w $(nodeset -f $(kavlan -l)) "puppetd -t --server=$(kavlan -l |head -1)"
+scp -r puppetlabs-openstack/ root@$(kavlan -l |head -1):/etc/puppet/modules/openstack/
