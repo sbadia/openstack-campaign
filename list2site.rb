@@ -6,7 +6,7 @@ nodes = %x{kavlan -l}.map { |l| l.chomp }
 master = nodes.shift
 clients = nodes
 
-f = File.new("#{File.expand_path(File.dirname(__FILE__))}/site.pp","w")
+f = File.new("#{File.expand_path(File.dirname(__FILE__))}/modules/puppet/files/master/site.pp","w")
 f.puts <<-EOF
 # MANAGED BY PUPPET
 Exec {
