@@ -1,0 +1,5 @@
+http_proxy: http://proxy.nancy.grid5000.fr:3128
+gem: --http-proxy http://proxy.nancy.grid5000.fr:3128 --no-rdoc --no-ri
+:sources:
+- http://gems.rubyforge.org/
+- http://gems.grid5000.fr/

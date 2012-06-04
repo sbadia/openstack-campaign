@@ -42,6 +42,12 @@ class puppet::base {
       owner   => root,
       group   => root,
       mode    => 644;
+    "/etc/gemrc":
+      source  => "puppet:///modules/puppet/repo/gemrc",
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => 644;
   }
 
   exec {
@@ -65,10 +71,11 @@ class puppet::master inherits puppet::base {
     "mysql":
       ensure => installed,
       provider => gem,
-      require => Package["libmysqlclient-dev"];
+      require => [Package["libmysqlclient-dev"],File["/etc/gemrc"]];
     "activerecord":
       ensure => "3.0.11",
-      provider => gem;
+      provider => gem,
+      require => File["/etc/gemrc"];
   }
 
   File["/etc/puppet/puppet.conf"] { source  => "puppet:///modules/puppet/master/puppet.conf" }
