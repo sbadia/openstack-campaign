@@ -130,7 +130,8 @@ class Openstack
         $jobs.each do |job|
           next if job.reload['state'] != 'running'
           vlan = get_vlan_property(job['uid'])
-          new_deploy = job.parent.deployments.submit(:environment => conf['env'], :nodes => job['assigned_nodes'], :key => conf['key'], :vlan => vlan, :notifications => "xmpp:#{ENV['USER']}@jabber.grid5000.fr") rescue nil
+          session.logger.info "Use KaVLAN vlan #{vlan.to_s}"
+          new_deploy = job.parent.deployments.submit(:environment => conf['env'], :nodes => job['assigned_nodes'], :key => conf['key'], :vlan => vlan.to_s) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?
         end
 
