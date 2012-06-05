@@ -7,11 +7,6 @@ GEM = 'openstackg5k'
 GEM_VERSION = Openstackg5k::VERSION
 TDIR = File.expand_path(File.dirname(__FILE__))
 
-desc "New release"
-task :release do
-  sh "git tag v#{GEM_VERSION} -m \"New release version: #{GEM_VERSION}\""
-end
-
 namespace :version do
   desc "New #{GEM} GIT release (v#{GEM_VERSION})"
   task :release do
