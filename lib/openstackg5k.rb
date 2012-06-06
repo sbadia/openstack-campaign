@@ -124,8 +124,8 @@ module Openstackg5k
 
   def generate_site(nodesite)
     puppet = nodesite.shift
-    clients = nodes
-    f = File.new("#{File.expand_path(File.dirname(__FILE__))}/modules/puppet/files/master/site.pp","w")
+    clients = nodesite
+    f = File.new(File.join(File.expand_path(File.dirname(__FILE__)),'..','/modules/puppet/files/master/site.pp'),"w")
     f.puts <<-EOF
 # MANAGED BY PUPPET
 Exec {
@@ -180,5 +180,6 @@ class openstack_controller {
   }
 } # class openstack_controller
 EOF
+  f.close
   end # def:: generate_site(nodes)
 end # module:: Openstackg5k
