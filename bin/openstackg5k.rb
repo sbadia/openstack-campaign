@@ -77,50 +77,50 @@ class Openstack
     end
 
     begin
-      Restfully::Session.new(:logger => $log, :base_uri => conf['base_uri']) do |root,session|
+      Restfully::Session.new(:logger => $log, :base_uri => conf['base_uri']) do |root,rsession|
         site = root.sites[:"#{conf['site']}"]
         if site.status.find{ |node| node['system_state'] == 'free' && node['hardware_state'] == 'alive' } then
-          session.logger.info "Job: #nodes => #{conf['nodes']}, type => {type='kavlan'}/vlan=1"
+          rsession.logger.info "Job: #nodes => #{conf['nodes']}, type => {type='kavlan'}/vlan=1"
           new_job = site.jobs.submit(:resources => "{type='kavlan'}/vlan=1+/nodes=#{conf['nodes']}",:command => "sleep 7200", :types => ["deploy"], :name => "openstackg5k") rescue nil
           $jobs.push(new_job) unless new_job.nil?
         else
-          session.logger.warn "No enough free node on #{conf['site']} site"
+          rsession.logger.warn "No enough free node on #{conf['site']} site"
           exit 1
         end
 
         if $jobs.empty?
-          session.logger.error "No jobs, quit..."
+          rsession.logger.error "No jobs, quit..."
           exit 0
         end
 
         begin
           Timeout.timeout(120) do
             until $jobs.all?{|job| job.reload['state'] == 'running' } do
-              session.logger.info "Some jobs are not running, wait before checking..."
+              rsession.logger.info "Some jobs are not running, wait before checking..."
               sleep 4
             end
           end
         rescue Timeout::Error => e
-          session.logger.warn "One of the jobs is still not running..."
+          rsession.logger.warn "One of the jobs is still not running..."
         end
 
         $jobs.each do |job|
           next if job.reload['state'] != 'running'
-          vlan = Openstackg5k::get_vlan_property(job['uid'])
-          session.logger.info "Deploy: env => #{conf['env']}, nodes => #{job["assigned_nodes"]}, vlan => #{vlan.to_s}"
-          new_deploy = job.parent.deployments.submit(:environment => conf['env'], :nodes => job['assigned_nodes'], :key => File.read(conf['key']), :vlan => vlan.to_s) rescue nil
+          $vlan = Openstackg5k::get_vlan_property(job['uid'])
+          rsession.logger.info "Deploy: env => #{conf['env']}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
+          new_deploy = job.parent.deployments.submit(:environment => conf['env'], :nodes => job['assigned_nodes'], :key => File.read(conf['key']), :vlan => $vlan.to_s) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?
         end
 
         begin
           Timeout.timeout(900) do
             until $deploy.all?{ |deployment| deployment.reload['status'] != 'processing' } do
-              session.logger.info "Some deployments are not terminated. Waiting before checking again..."
+              rsession.logger.info "Some deployments are not terminated. Waiting before checking again..."
               sleep 30
             end
           end
         rescue Timeout::Error => e
-          session.logger.warn "One of the deployments is still not terminated, it will be discarded."
+          rsession.logger.warn "One of the deployments is still not terminated, it will be discarded."
         end
 
         $deploy.each do |deployment|
