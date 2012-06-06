@@ -1,6 +1,7 @@
 # Author:: Sebastien Badia (<seb@sebian.fr>)
 # Date:: Mon Jun 04 23:11:30 +0200 2012
 require 'rubygems'
+require 'yaml'
 require 'lib/openstackg5k'
 
 GEM = 'openstackg5k'
@@ -34,6 +35,26 @@ namespace :version do
     desc "Bump #{GEM} by a patch version"
     task :patch do
       bump_version(:patch)
+    end
+  end
+end
+
+namespace :modules do
+  desc 'clone all required modules'
+  task :clone do
+    repo_hash = YAML.load_file(File.join(File.dirname(__FILE__), 'repo.yml'))
+    repos = (repo_hash['repos'] || {})
+    modulepath = (repo_hash['modulepath'] || './modules')
+    repos_to_clone = (repos['repo_paths'] || {})
+    branches_to_checkout = (repos['checkout_branches'] || {})
+    repos_to_clone.each do |remote, local|
+      outpath = File.join(modulepath, local)
+      output = `git clone #{remote} #{outpath}`
+    end
+    branches_to_checkout.each do |local, branch|
+      Dir.chdir(File.join(modulepath, local)) do
+        output = `git checkout #{branch}`
+      end
     end
   end
 end
