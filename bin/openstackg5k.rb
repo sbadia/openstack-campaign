@@ -129,16 +129,16 @@ class Openstack
           ctrl = nodes.shift
           Net::SSH::Multi.start(:on_error => :warn) do |session|
             deployment['nodes'].each do |node|
-              session.use "root@#{node}"
+              session.use "root@#{node.split('.')[0]}-kavlan-#{$vlan}.#{site}.grid5000.fr"
             end
             session.group :compute do
               nodes.each do |cmp|
-                session.use "root@#{cmp}"
+                session.use "root@#{cmp.split('.')[0]}-kavlan-#{$vlan}.#{site}.grid5000.fr"
               end
             end
             session.group :cloud do
               ctrl.each do |ctr|
-                session.use "root@#{ctr}"
+                session.use "root@#{ctr.split('.')[0]}-kavlan-#{$vlan}.#{site}.grid5000.fr"
               end
             end
             Openstackg5k::nexec(session,"echo 'All:' `hostname -f`")
