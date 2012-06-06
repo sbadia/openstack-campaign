@@ -129,16 +129,16 @@ class Openstack
           ctrl = nodes.shift
           Net::SSH::Multi.start(:on_error => :warn) do |session|
             deployment['nodes'].each do |node|
-              session.use "root@#{node.split('.')[0]}-kavlan-#{$vlan}.#{site}.grid5000.fr"
+              session.use "root@#{node.split('.')[0]}-kavlan-#{$vlan.to_s}.#{site}.grid5000.fr"
             end
             session.group :compute do
               nodes.each do |cmp|
-                session.use "root@#{cmp.split('.')[0]}-kavlan-#{$vlan}.#{site}.grid5000.fr"
+                session.use "root@#{cmp.split('.')[0]}-kavlan-#{$vlan.to_s}.#{site}.grid5000.fr"
               end
             end
             session.group :cloud do
               ctrl.each do |ctr|
-                session.use "root@#{ctr.split('.')[0]}-kavlan-#{$vlan}.#{site}.grid5000.fr"
+                session.use "root@#{ctr.split('.')[0]}-kavlan-#{$vlan.to_s}.#{site}.grid5000.fr"
               end
             end
             Openstackg5k::nexec(session,"echo 'All:' `hostname -f`")
@@ -149,7 +149,7 @@ class Openstack
         end # $deploy.each
       end # Restfully::Session
     rescue => e
-      $log.error e.class.name
+      $log.error "Catched unexpected exception #{e.class.name}: #{e.message} - #{e.backtrace.join("\n")}"
       Openstackg5k::clean!
       exit 1
     end
