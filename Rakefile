@@ -44,19 +44,23 @@ namespace :modules do
   task :clone do
     repo_hash = YAML.load_file(File.join(File.dirname(__FILE__), 'repo.yml'))
     repos = (repo_hash['repos'] || {})
-    modulepath = (repo_hash['modulepath'] || './modules')
     repos_to_clone = (repos['repo_paths'] || {})
-    branches_to_checkout = (repos['checkout_branches'] || {})
     repos_to_clone.each do |remote, local|
-      outpath = File.join(modulepath, local)
-      output = `git clone #{remote} #{outpath}`
-    end
-    branches_to_checkout.each do |local, branch|
-      Dir.chdir(File.join(modulepath, local)) do
-        output = `git checkout #{branch}`
-      end
+      outpath = File.join('./modules', local)
+      `git clone #{remote} #{outpath}`
     end
   end
+  desc 'clean all puppetlabs modules'
+  task :clean do
+    repo_hash = YAML.load_file(File.join(File.dirname(__FILE__), 'repo.yml'))
+    repos = (repo_hash['repos'] || {})
+    repos_to_clone = (repos['repo_paths'] || {})
+    repos_to_clone.each do |remote, local|
+      outpath = File.join('./modules', local)
+      `rm -rf #{outpath}`
+    end
+  end
+
 end
 
 def bump_version(level)

@@ -6,3 +6,22 @@ tmp
 .yardoc
 _yardoc
 doc/
+
+# Puppetlabs modules
+modules/apt/
+modules/concat/
+modules/git/
+modules/glance/
+modules/horizon/
+modules/keystone/
+modules/memcached/
+modules/mysql/
+modules/nova/
+modules/rabbitmq/
+modules/rsync/
+modules/ssh/
+modules/stdlib/
+modules/swift/
+modules/sysctl/
+modules/vcsrepo/
+modules/xinetd/

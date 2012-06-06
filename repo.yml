@@ -1,4 +1,4 @@
-# modulepath: /etc/puppet/modules
+---
 repos:
   repo_paths:
     # openstack git repos
@@ -21,7 +21,3 @@ repos:
     https://github.com/puppetlabs/puppetlabs-apt: apt
     https://github.com/ripienaar/puppet-concat: concat
     https://github.com/duritong/puppet-sysctl.git: sysctl
-  checkout_branches:
-#  keystone: dev
-#  glance: dev
-#    nova: dev
