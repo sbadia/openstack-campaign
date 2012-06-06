@@ -125,26 +125,30 @@ class Openstack
 
         $deploy.each do |deployment|
           next if deployment.reload['status'] != 'terminated'
-          nodes = deployment['nodes'].dup
+          good = []
+          deployment['nodes'].each do |conv|
+            good << "#{conv.split('.')[0]}-kavlan-#{$vlan.to_s}.#{conf['site']}.grid5000.fr"
+          end
+          nodes = good.dup
+          Openstackg5k::generate_site(good)
           ctrl = nodes.shift
-          master = "#{ctr.split('.')[0]}-kavlan-#{$vlan.to_s}.#{conf['site']}.grid5000.fr"
           Net::SSH::Multi.start(:on_error => :warn) do |session|
-            deployment['nodes'].each do |node|
-              session.use "root@#{node.split('.')[0]}-kavlan-#{$vlan.to_s}.#{conf['site']}.grid5000.fr"
+            good.each do |node|
+              session.use "root@#{node}"
             end
             session.group :compute do
               nodes.each do |cmp|
-                session.use "root@#{cmp.split('.')[0]}-kavlan-#{$vlan.to_s}.#{conf['site']}.grid5000.fr"
+                session.use "root@#{cmp}"
               end
             end
             session.group :cloud do
               ctrl.each do |ctr|
-                session.use "root@#{master}"
+                session.use "root@#{ctr}"
               end
             end
             Openstackg5k::nexec(session,"apt-get update && apt-get install rake puppet git multitail -y --force-yes")
             session.loop
-            Net::SCP.start(master, "root") do |scp|
+            Net::SCP.start(ctrl, "root") do |scp|
               scp.upload!(File.join(File.dirname(__FILE__), "modules"),"/etc/puppet/",:recursive => true)
             end
             Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/site.pp",:cloud)
