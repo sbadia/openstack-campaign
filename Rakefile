@@ -7,6 +7,12 @@ GEM = 'openstackg5k'
 GEM_VERSION = Openstackg5k::VERSION
 TDIR = File.expand_path(File.dirname(__FILE__))
 
+desc "Upload to Nancy"
+task :up do
+  sh "ssh nancy.user 'rm -rf openstack-campaign'"
+  sh "scp -r ~/dev/edge/openstack-campaign/ nancy.user:"
+end
+
 namespace :version do
   desc "New #{GEM} GIT release (v#{GEM_VERSION})"
   task :release do
