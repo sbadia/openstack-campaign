@@ -1,6 +1,6 @@
 ---
 base_uri: https://api.grid5000.fr/stable/grid5000
-nodes: 1
+nodes: 3
 site: nancy
 env: ubuntu-x64-1204
-key: '~/.ssh/id_dsa.pub'
+key: '/home/sbadia/.ssh/id_dsa.pub'
