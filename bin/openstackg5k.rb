@@ -33,6 +33,13 @@ class Openstack
     :boolean      => true,
     :proc         => nil
 
+  option :no_clean,
+    :short        => "-n",
+    :long         => "--no-clean",
+    :description  => "Active debug mode",
+    :boolean      => true,
+    :proc         => nil
+
   option :help,
     :short        => "-h",
     :long         => "--help",
