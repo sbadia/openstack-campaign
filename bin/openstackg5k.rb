@@ -148,15 +148,32 @@ class Openstack
 
         $deploy.each do |deployment|
           next if deployment.reload['status'] != 'terminated'
-          deployment['nodes'].each do |host|
-            puts "Connecting to #{host} and running..."
-            # ssh
-          end
-        end
+          nodes = deployment['nodes'].dup
+          ctrl = nodes.shift
+          Net::SSH::Multi.start(:on_error => :warn) do |session|
+            deployment['nodes'].each do |node|
+              session.use "root@#{node}"
+            end
+            session.group :compute do
+              nodes.each do |cmp|
+                session.use "root@#{cmp}"
+              end
+            end
+            session.group :cloud do
+              ctrl.each do |ctr|
+                session.use "root@#{ctr}"
+              end
+            end
+            Openstackg5k::nexec(session,"echo 'All:' `hostname -f`")
+            Openstackg5k::nexec(session,"echo 'Cloud:' `hostname -f`",:cloud, critical = false)
+            Openstackg5k::nexec(session,"echo 'Computes:' `hostname -f`,:compute")
+            session.loop
+          end # Net::SSH::Multi
+        end # $deploy.each
       end # Restfully::Session
     rescue => e
-      LOGGER.error e.class.name
-      clean!
+      $log.error e.class.name
+      Openstackg5k::clean!
       exit 1
     end
   end # def:: launch_os
