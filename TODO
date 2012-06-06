@@ -1,0 +1,5 @@
+# vi: set ft=changelog :
+Sebastien Badia - Sebian <se@sebian.fr>
+  * tests:
+    - gestion des clées ssh (test de présence,choix,option)
+    - nombre de noeuds mini pour une xp
