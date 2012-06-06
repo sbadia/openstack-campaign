@@ -146,14 +146,16 @@ class Openstack
                 session.use "root@#{ctr}"
               end
             end
-            Openstackg5k::nexec(session,"apt-get update && apt-get install rake puppet git multitail -y --force-yes")
+            Openstackg5k::nexec(session,"apt-get update && apt-get install rake puppet git multitail -y --force-yes", showout = false)
             session.loop
-            Net::SCP.start(ctrl, "root") do |scp|
-              scp.upload!(File.join(File.dirname(__FILE__), "modules"),"/etc/puppet/",:recursive => true)
-            end
-            Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/site.pp",:cloud)
+            system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{ctrl}:/etc/puppet/modules")
+            Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/site.pp;/etc/init.d/puppetmaster restart",:cloud)
             session.loop
-            Openstackg5k::nexec(session,"puppetd -t --server=#{master}",:compute, critical = false)
+            Openstackg5k::nexec(session,"puppetd -t --server=#{ctrl}",:compute, critical = false)
+            session.loop
+            Openstackg5k::nexec(session,"puppetca --sign --all",:cloud)
+            session.loop
+            Openstackg5k::nexec(session,"puppetd -t --server=#{ctrl}",:compute, critical = false)
             session.loop
           end # Net::SSH::Multi
         end # $deploy.each
