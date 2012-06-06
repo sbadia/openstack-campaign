@@ -131,6 +131,7 @@ class Openstack
           end
           nodes = good.dup
           Openstackg5k::generate_site(good)
+          Openstackg5k::autosign_puppet(good)
           ctrl = nodes.shift
           Net::SSH::Multi.start(:on_error => :warn) do |session|
             good.each do |node|

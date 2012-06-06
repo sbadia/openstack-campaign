@@ -182,4 +182,12 @@ class openstack_controller {
 EOF
   f.close
   end # def:: generate_site(nodes)
+
+  def autosign_puppet(sign)
+    f = File.new(File.join(File.expand_path(File.dirname(__FILE__)),'..','/modules/puppet/files/master/autosign.conf'),"w")
+      sign.each do |n|
+        f.puts n
+      end
+    f.close
+  end # def:: autosign_puppet(sign)
 end # module:: Openstackg5k
