@@ -7,10 +7,12 @@ $: << File.join(File.dirname(__FILE__), "..", "lib")
 
 require 'openstackg5k'
 require 'rubygems'
-require "mixlib/cli"
+require 'mixlib/cli'
 require 'restfully'
 require 'json'
 require 'yaml'
+
+include Openstackg5k
 
 class Openstack
   include Mixlib::CLI
@@ -45,65 +47,37 @@ class Openstack
     :proc         => lambda {|v| puts Openstackg5k::VERSION},
     :exit         => 0
 
-  LOGGER = Logger.new(STDOUT)
-  LOGGER.level = Logger::INFO
+  $log = Logger.new(STDOUT)
+  $log.level = Logger::INFO
 
   def runos
     parse_options
     $jobs = []
     $deploy = []
 
-    def clean!
-      LOGGER.warn "Received cleanup request, killing all jobs and deployments..."
-      $deploy.each{|deployment| deployment.delete}
-      $jobs.each{|job| job.delete}
-    end # def:: clean!
-
     %w{INT TERM}.each do |sig|
       Signal.trap(sig){
-        clean!
+        Openstackg5k::clean!
         exit(1)
       }
     end
     launch_os
   end # def:: runos
 
-  def get_vlan_property(jobid)
-    oarprop = nil
-    vlans = []
-    if not jobid.nil?
-      oarprop = IO.popen("/usr/bin/oarstat -p -j "+jobid.to_s).readlines
-    else
-      LOGGER.error "bad arguments #{jobid}"
-      exit 1
-    end
-    oarprop.each do |prop|
-      if prop =~ /vlan\s+\=\s+\'(\d+)\'/
-        vlans.push($1)
-      end
-    end
-    if (vlans.length < 1)
-      LOGGER.error "no vlan found, default to vlan 5"
-      vlans = 5
-    else
-      return vlans
-    end
-  end # def:: get_vlan_property(jobid)
-
   def launch_os
     if File.exist?(config[:config_file])
       conf = YAML.load_file(config[:config_file])
-      LOGGER.info "Use config file #{config[:config_file]}"
+      $log.info "Use config file #{config[:config_file]}"
     else
-      LOGGER.error "No conf file"
+      $log.error "No conf file"
       exit 1
     end
 
     begin
-      Restfully::Session.new(:logger => LOGGER, :base_uri => conf['base_uri']) do |root,session|
+      Restfully::Session.new(:logger => $log, :base_uri => conf['base_uri']) do |root,session|
         site = root.sites[:"#{conf['site']}"]
         if site.status.find{ |node| node['system_state'] == 'free' && node['hardware_state'] == 'alive' } then
-
+          session.logger.info "Job: #nodes => #{conf['nodes']}, type => {type='kavlan'}/vlan=1"
           new_job = site.jobs.submit(:resources => "{type='kavlan'}/vlan=1+/nodes=#{conf['nodes']}",:command => "sleep 7200", :types => ["deploy"], :name => "openstackg5k") rescue nil
           $jobs.push(new_job) unless new_job.nil?
         else
@@ -129,8 +103,8 @@ class Openstack
 
         $jobs.each do |job|
           next if job.reload['state'] != 'running'
-          vlan = get_vlan_property(job['uid'])
-          session.logger.info "Use KaVLAN vlan #{vlan.to_s}"
+          vlan = Openstackg5k::get_vlan_property(job['uid'])
+          session.logger.info "Deploy: env => #{conf['env']}, nodes => #{job["assigned_nodes"]}, vlan => #{vlan.to_s}"
           new_deploy = job.parent.deployments.submit(:environment => conf['env'], :nodes => job['assigned_nodes'], :key => File.read(conf['key']), :vlan => vlan.to_s) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?
         end
