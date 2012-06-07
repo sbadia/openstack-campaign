@@ -97,7 +97,7 @@ class puppet::master inherits puppet::base {
       mode    => 644,
       require => Package["puppetmaster"];
     "/etc/puppet/autosign.conf":
-      source  => "puppet:///modules/puppet/master/autosign.pp",
+      source  => "puppet:///modules/puppet/master/autosign.conf",
       ensure  => file,
       owner   => root,
       group   => root,
