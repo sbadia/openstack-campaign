@@ -6,6 +6,7 @@
 $: << File.join(File.dirname(__FILE__), "..", "lib")
 
 require 'openstackg5k'
+require 'puppetg5k'
 require 'rubygems'
 require 'mixlib/cli'
 require 'restfully'
@@ -16,6 +17,7 @@ require 'json'
 require 'yaml'
 
 include Openstackg5k
+include Puppetg5k
 
 class Openstack
   include Mixlib::CLI
@@ -60,7 +62,8 @@ class Openstack
   def runos
     parse_options
     $log = Logger.new(STDOUT)
-    $log.level = Logger::config[:log_level].to_s.upcase
+    #$log.level = Logger::config[:log_level].to_s.upcase
+    $log.level = Logger::INFO
     $jobs = []
     $deploy = []
 
@@ -140,8 +143,8 @@ class Openstack
             good << "#{conv.split('.')[0]}-kavlan-#{$vlan.to_s}.#{conf['site']}.grid5000.fr"
           end
           nodes = good.dup
-          Openstackg5k::generate_site(good)
-          Openstackg5k::autosign_puppet(good)
+          Puppetg5k::generate_site(good)
+          Puppetg5k::autosign_puppet(good)
           ctrl = nodes.shift
           Net::SSH::Multi.start(:on_error => :warn) do |session|
             good.each do |node|
@@ -157,17 +160,13 @@ class Openstack
                 session.use "root@#{ctr}"
               end
             end
-            Openstackg5k::nexec(session,"apt-get update && apt-get install rake puppet git multitail -y --force-yes", showout = false)
+            Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update && apt-get install rake puppet git multitail -y --force-yes", showout = false)
             session.loop
             rsession.logger.info "Upload puppet modules on #{ctrl}..."
             system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{ctrl}:/etc/puppet")
             Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/site.pp;/etc/init.d/puppetmaster restart",:cloud)
             session.loop
-            Openstackg5k::nexec(session,"puppetd -t --server=#{ctrl}",:compute, critical = false)
-            session.loop
-            Openstackg5k::nexec(session,"puppetca --sign --all",:cloud)
-            session.loop
-            Openstackg5k::nexec(session,"puppetd -t --server=#{ctrl}",:compute, critical = false)
+            Openstackg5k::nexec(session,"puppetd -t --server=#{ctrl} || true",:compute, critical = false)
             session.loop
           end # Net::SSH::Multi
         end # $deploy.each
