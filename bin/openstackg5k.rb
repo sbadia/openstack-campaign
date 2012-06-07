@@ -23,22 +23,21 @@ class Openstack
   option :config_file,
     :short        => "-c CONFIG",
     :long         => "--config CONFIG",
-    :default      => 'openstackg5k.yml',
+    :default      => "openstackg5k.yml",
     :description  => "The configuration file to use"
 
-  option :debug,
-    :short        => "-d",
-    :long         => "--debug",
-    :description  => "Active debug mode",
-    :boolean      => true,
-    :proc         => nil
+  option :log_level,
+    :short        => "-l LEVEL",
+    :long         => "--log-level LEVEL",
+    :description  => "Set log level (debug, info, warn, error, fatal)",
+    :default      => "warn",
+    :proc         => Proc.new { |l| l.to_sym }
 
   option :no_clean,
     :short        => "-n",
     :long         => "--no-clean",
-    :description  => "Active debug mode",
-    :boolean      => true,
-    :proc         => nil
+    :description  => "Disable restfully clean (jobs/deploy)",
+    :boolean      => true
 
   option :help,
     :short        => "-h",
@@ -57,11 +56,11 @@ class Openstack
     :proc         => lambda {|v| puts Openstackg5k::VERSION},
     :exit         => 0
 
-  $log = Logger.new(STDOUT)
-  $log.level = Logger::WARN
 
   def runos
     parse_options
+    $log = Logger.new(STDOUT)
+    $log.level = Logger::config[:log_level].to_s.upcase
     $jobs = []
     $deploy = []
 
@@ -175,7 +174,9 @@ class Openstack
       end # Restfully::Session
     rescue => e
       $log.error "Catched unexpected exception #{e.class.name}: #{e.message} - #{e.backtrace.join("\n")}"
-      Openstackg5k::clean!
+      if ! config[:no_clean].nil?:
+        Openstackg5k::clean!
+      end
       exit 1
     end
   end # def:: launch_os
