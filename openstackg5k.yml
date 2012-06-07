@@ -2,7 +2,8 @@
 base_uri: https://api.grid5000.fr/stable/grid5000
 cache: false
 nodes: 3
-walltime_hours: 2
+walltime_hours: 5
 site: nancy
-env: ubuntu-x64-1204
+#env: ubuntu-x64-1204
+env: wheezy-x64-min-custom
 key: '/home/sbadia/.ssh/id_dsa.pub'
