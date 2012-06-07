@@ -58,7 +58,7 @@ class Openstack
     :exit         => 0
 
   $log = Logger.new(STDOUT)
-  $log.level = Logger::INFO
+  $log.level = Logger::WARN
 
   def runos
     parse_options
@@ -84,11 +84,15 @@ class Openstack
     end
 
     begin
-      Restfully::Session.new(:logger => $log, :base_uri => conf['base_uri']) do |root,rsession|
+      Restfully::Session.new(:logger => $log, :cache => conf['cache'], :base_uri => conf['base_uri']) do |root,rsession|
         site = root.sites[:"#{conf['site']}"]
         if site.status.find{ |node| node['system_state'] == 'free' && node['hardware_state'] == 'alive' } then
           rsession.logger.info "Job: #nodes => #{conf['nodes']}, type => {type='kavlan'}/vlan=1"
-          new_job = site.jobs.submit(:resources => "{type='kavlan'}/vlan=1+/nodes=#{conf['nodes']}",:command => "sleep 7200", :types => ["deploy"], :name => "openstackg5k") rescue nil
+          new_job = site.jobs.submit(
+            :resources => "{type='kavlan'}/vlan=1+/nodes=#{conf['nodes']},walltime=#{conf['walltime_hours']}",
+            :command => "sleep #{(conf['walltime_hours'].to_i)*7200}",
+            :types => ["deploy"],
+            :name => "openstackg5k") rescue nil
           $jobs.push(new_job) unless new_job.nil?
         else
           rsession.logger.warn "No enough free node on #{conf['site']} site"
@@ -156,7 +160,8 @@ class Openstack
             end
             Openstackg5k::nexec(session,"apt-get update && apt-get install rake puppet git multitail -y --force-yes", showout = false)
             session.loop
-            system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{ctrl}:/etc/puppet/modules")
+            rsession.logger.info "Upload puppet modules on #{ctrl}..."
+            system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{ctrl}:/etc/puppet")
             Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/site.pp;/etc/init.d/puppetmaster restart",:cloud)
             session.loop
             Openstackg5k::nexec(session,"puppetd -t --server=#{ctrl}",:compute, critical = false)
