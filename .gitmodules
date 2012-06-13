@@ -46,3 +46,6 @@
 [submodule "modules/sysctl"]
 	path = modules/sysctl
 	url = https://github.com/puppetlabs/puppetlabs-sysctl
+[submodule "modules/openstack"]
+	path = modules/openstack
+	url = https://github.com/puppetlabs/puppetlabs-openstack.git

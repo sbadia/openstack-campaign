@@ -12,3 +12,9 @@ Launch tests
 ------------
 1. `gem install g5k-campaign --source http://g5k-campaign.gforge.inria.fr/pkg --user-install --no-ri --no-rdoc`
 2. `git clone git://github.com/sbadia/openstack-campaign.git`
+
+Submodules
+-----------------
+1. `git submodule init`
+2. `git submodule update`
+3. `git submodule foreach git pull origin master`
