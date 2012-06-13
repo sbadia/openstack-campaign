@@ -94,7 +94,7 @@ class Openstack
             :resources => "{type='kavlan'}/vlan=1+/nodes=#{conf['nodes']},walltime=#{conf['walltime_hours']}",
             :command => "sleep #{(conf['walltime_hours'].to_i)*7200}",
             :types => ["deploy"],
-            :name => "openstackg5k") rescue nil
+            :name => conf['job_name']) rescue nil
           $jobs.push(new_job) unless new_job.nil?
         else
           rsession.logger.warn "No enough free node on #{conf['site']} site"
