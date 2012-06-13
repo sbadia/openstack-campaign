@@ -70,4 +70,13 @@ EOF
       end
     f.close
   end # def:: autosign_puppet(sign)
+
+  def clush_nodes(cnodes)
+    f = File.new(File.join(File.expand_path(File.dirname(__FILE__)),'..','nodes'),'w')
+      f.puts '# clush -l root -w $(nodeset -f $(cat nodes)) "puppetd -t --server=$(cat nodes |head -1)"'
+      cnodes.each do |n|
+        f.puts n
+      end
+    f.close
+  end # def:: clush_nodes(cnodes)
 end # module:: Puppetg5k
