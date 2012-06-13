@@ -143,9 +143,9 @@ class Openstack
             good << "#{conv.split('.')[0]}-kavlan-#{$vlan.to_s}.#{conf['site']}.grid5000.fr"
           end
           nodes = good.dup
+          Puppetg5k::clush_nodes(good)
           Puppetg5k::generate_site(good)
           Puppetg5k::autosign_puppet(good)
-          Puppetg5k::clush_nodes(good)
           ctrl = nodes.shift
           Net::SSH::Multi.start(:on_error => :warn) do |session|
             good.each do |node|
