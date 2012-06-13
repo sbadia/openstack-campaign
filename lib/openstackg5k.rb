@@ -76,35 +76,35 @@ module Openstackg5k
     end
   end # def:: open_channel
 
-  def nexec(session, cmd, group = nil, critical = true, showerr = true, showout = true)
+  def nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
     outs = {}
     errs = {}
-    channel = open_channel(session,group) do |chtmp|
+    channel = open_channel(session,args[:group]) do |chtmp|
       chtmp.exec(cmd) do |ch, success|
         unless success
           msg("unable to execute '#{cmd}' on #{ch.connection.host}",MSG_ERROR)
         end
           msg("Executing '#{cmd}' on #{ch.connection.host}]",MSG_INFO) \
-          if showout
+          if args[:showout]
       end
     end
     channel.on_data do |chtmp,data|
       outs[chtmp.connection.host] = [] unless outs[chtmp.connection.host]
       outs[chtmp.connection.host] << data.strip
       msg("[#{chtmp.connection.host}] #{data.strip}") \
-      if showout
+      if args[:showout]
     end
     channel.on_extended_data do |chtmp,type,data|
       errs[chtmp.connection.host] = [] unless errs[chtmp.connection.host]
       errs[chtmp.connection.host] << data.strip
       msg("[#{chtmp.connection.host} E] #{data.strip}") \
-        if showout
+        if args[:showout]
     end
 
     channel.on_request("exit-status") do |chtmp, data|
       status = data.read_long
       if status != 0
-        if showerr or critical
+        if args[:showerr] or args[:critical]
           msg("exec of '#{cmd}' on #{chtmp.connection.host} failed " \
               "with return status #{status.to_s}",MSG_ERROR)
           msg("---stdout dump---")
@@ -115,7 +115,7 @@ module Openstackg5k
             errs[chtmp.connection.host]
           msg("---\n")
         end
-        exit 1 if critical
+        exit 1 if args[:critical]
       end
     end
     channel.wait
