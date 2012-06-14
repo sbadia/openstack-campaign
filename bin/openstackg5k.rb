@@ -162,16 +162,13 @@ class Openstack
               end
             end
             # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
-            Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update && apt-get install rake puppet git multitail -y --force-yes", args = {:showout => false})
+            Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail -y --force-yes", args = {:showout => true})
             session.loop
-            rsession.logger.info "Upload puppet modules on #{ctrl}..."
-            system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{ctrl}:/etc/puppet")
-            Openstackg5k::nexec(
-              session,
-              "puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/site.pp;/etc/init.d/puppetmaster restart",
-              args = { :group => :cloud, :critical => true})
-            session.loop
-            Openstackg5k::nexec(session,"puppetd -t --server=#{ctrl} || true",args = {:group => :compute, :critical => false})
+            good.each do |nod|
+              rsession.logger.info "Upload puppet modules on #{nod}..."
+              system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
+            end
+            Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
             session.loop
           end # Net::SSH::Multi
         end # $deploy.each
