@@ -1,10 +1,9 @@
 ---
 base_uri: https://api.grid5000.fr/stable/grid5000
 cache: false
-nodes: 3
-walltime_hours: 5
+nodes: 4
+walltime_hours: '01:50:00'
 site: 'nancy'
 job_name: 'openstackg5k'
-#env: 'ubuntu-x64-br'
 env: 'wheezy-x64-br'
 key: '/home/sbadia/.ssh/id_dsa.pub'
