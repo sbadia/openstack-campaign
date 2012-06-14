@@ -117,7 +117,7 @@ node '#{clients.join('\',\'')}' {
     private_interface  => $private_interface,
     internal_address   => $ipaddress,
     libvirt_type       => 'kvm',
-    fixed_range        => $fixed_range,
+    fixed_range        => $fixed_network_range,
     network_manager    => 'nova.network.manager.FlatManager',
     multi_host         => false,
     sql_connection     => $sql_connection,
