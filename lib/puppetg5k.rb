@@ -3,64 +3,138 @@
 #
 module Puppetg5k
   def generate_site(nodesite)
-    puppet = nodesite.shift
-    clients = nodesite
-    f = File.new(File.join(File.expand_path(File.dirname(__FILE__)),'..','/modules/puppet/files/master/site.pp'),"w")
+    pnodes = nodesite.dup
+    puppet = pnodes.shift
+    clients = pnodes
+    f = File.new(File.join(File.expand_path(File.dirname(__FILE__)),'..','/modules/puppet/files/master/install.pp'),"w")
     f.puts <<-EOF
 # MANAGED BY PUPPET
-Exec {
-  logoutput => true,
-}
-
 node '#{puppet}' {
+  include 'mysql::server'
   include 'puppet::master'
-  class { 'openstack::controller':
-    public_address   => $fqdn,
-    public_interface => 'eth0',
-    private_interface => 'eth0',
-    internal_address => $ipaddress,
-  }
-  class { 'openstack_controller': }
 }
 
 
 node '#{clients.join('\',\'')}' {
     $master = '#{puppet}'
     include 'puppet::client'
+}
+EOF
 
-    class { 'openstack::compute':
-      internal_address => $ipaddress,
-      private_interface => 'eth0',
-    }
+  f.close
+  p = File.new(File.join(File.expand_path(File.dirname(__FILE__)),'..','/modules/puppet/files/master/openstack.pp'),"w")
+  p.puts <<-EOF
+# MANAGED BY PUPPET
+# This document serves as an example of how to deploy
+# basic single and multi-node openstack environments.
+#
+
+# deploy a script that can be used to test nova
+file { '/tmp/test_nova.sh':
+  source => 'puppet:///modules/openstack/nova_test.sh',
 }
 
-class openstack_controller {
-  #
-  # set up auth credntials so that we can authenticate easily
-  #
-  file { '/root/auth':
-    content =>
-  '
-  export OS_TENANT_NAME=openstack
-  export OS_USERNAME=admin
-  export OS_PASSWORD=ChangeMe
-  export OS_AUTH_URL="http://localhost:5000/v2.0/"
-  '
-  }
-  # this is a hack that I have to do b/c openstack nova
-  # sets up a route to reroute calls to the metadata server
-  # to its own server which fails
-  file { '/usr/lib/ruby/1.8/facter/ec2.rb':
-    ensure => absent,
+####### shared variables ##################
+
+
+# this section is used to specify global variables that will
+# be used in the deployment of multi and single node openstack
+# environments
+
+# assumes that eth0 is the public interface
+$public_interface  = 'br100'
+# assumes that eth1 is the interface that will be used for the vm network
+# this configuration assumes this interface is active but does not have an
+# ip address allocated to it.
+$private_interface = 'br100'
+# credentials
+$admin_email          = 'seb@sebian.fr'
+$admin_password       = 'keystone_admin'
+$keystone_db_password = 'keystone_db_pass'
+$keystone_admin_token = 'keystone_admin_token'
+$nova_db_password     = 'nova_pass'
+$nova_user_password   = 'nova_pass'
+$glance_db_password   = 'glance_pass'
+$glance_user_password = 'glance_pass'
+$rabbit_password      = 'openstack_rabbit_password'
+$rabbit_user          = 'openstack_rabbit_user'
+$fixed_network_range  = '10.0.0.0/24'
+# switch this to true to have all service log at verbose
+$verbose              = 'false'
+
+
+#### end shared variables #################
+
+# multi-node specific parameters
+
+$controller_node_public   = '#{puppet}'
+$controller_node_internal = '#{puppet}'
+$sql_connection         = "mysql://nova:${nova_db_password}@${controller_node_internal}/nova"
+
+node '#{puppet}' {
+
+#  class { 'nova::volume': enabled => true }
+#  class { 'nova::volume::iscsi': }
+
+  class { 'openstack::controller':
+    public_address          => $controller_node_public,
+    public_interface        => $public_interface,
+    private_interface       => $private_interface,
+    internal_address        => $controller_node_internal,
+    floating_range          => '10.16.60.0/24',
+    fixed_range             => $fixed_network_range,
+    # by default it does not enable multi-host mode
+    multi_host              => false,
+    # by default is assumes flat dhcp networking mode
+    network_manager         => 'nova.network.manager.FlatManager',
+    verbose                 => $verbose,
+    mysql_root_password     => $mysql_root_password,
+    admin_email             => $admin_email,
+    admin_password          => $admin_password,
+    keystone_db_password    => $keystone_db_password,
+    keystone_admin_token    => $keystone_admin_token,
+    glance_db_password      => $glance_db_password,
+    glance_user_password    => $glance_user_password,
+    nova_db_password        => $nova_db_password,
+    nova_user_password      => $nova_user_password,
+    rabbit_password         => $rabbit_password,
+    rabbit_user             => $rabbit_user,
+    export_resources        => false,
   }
 
-  class {
-    'openstack::auth_file':
-      admin_password => 'ChangeMe';
+  class { 'openstack::auth_file':
+    admin_password       => $admin_password,
+    keystone_admin_token => $keystone_admin_token,
+    controller_node      => $controller_node_internal,
   }
-} # class openstack_controller
+
+
+}
+
+node '#{clients.join('\',\'')}' {
+
+  class { 'openstack::compute':
+    private_interface  => $private_interface,
+    internal_address   => $ipaddress,
+    libvirt_type       => 'kvm',
+    fixed_range        => $fixed_range,
+    network_manager    => 'nova.network.manager.FlatManager',
+    multi_host         => false,
+    sql_connection     => $sql_connection,
+    rabbit_host        => $controller_node_internal,
+    rabbit_password    => $rabbit_password,
+    rabbit_user        => $rabbit_user,
+    glance_api_servers => "${controller_node_internal}:9292",
+    vncproxy_host      => $controller_node_public,
+    vnc_enabled        => 'true',
+    verbose            => $verbose,
+    manage_volumes     => true,
+    nova_volume        => 'nova-volumes'
+  }
+
+}
 EOF
-  f.close
+  p.close
   end # def:: generate_site(nodes)
 
   def autosign_puppet(sign)
