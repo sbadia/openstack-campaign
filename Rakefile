@@ -17,7 +17,7 @@ namespace :repo do
 
   desc "Clean tmp files"
   task :clean do
-    sh "rm -rf modules/puppet/files/master/{autosign.conf,site.pp}"
+    sh "rm -rf modules/puppet/files/master/{autosign.conf,install.pp,openstack.pp}"
     sh "rm -rf nodes"
   end
 end
