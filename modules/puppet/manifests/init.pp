@@ -89,13 +89,24 @@ class puppet::master inherits puppet::base {
    }
 
   file {
-    "/etc/puppet/manifests/site.pp":
-      source  => "puppet:///modules/puppet/master/site.pp",
+    "/etc/puppet/manifests/install.pp":
+      source  => "puppet:///modules/puppet/master/install.pp",
       ensure  => file,
       owner   => root,
       group   => root,
       mode    => 644,
       require => Package["puppetmaster"];
+    "/etc/puppet/manifests/openstack.pp":
+      source  => "puppet:///modules/puppet/master/openstack.pp",
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => 644,
+      require => Package["puppetmaster"];
+    "/etc/puppet/manifests/site.pp":
+      ensure  => link,
+      target  => "/etc/puppet/manifests/openstack.pp",
+      require => File["/etc/puppet/manifests/openstack.pp"];
     "/etc/puppet/autosign.conf":
       source  => "puppet:///modules/puppet/master/autosign.conf",
       ensure  => file,
