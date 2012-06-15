@@ -21,22 +21,56 @@ include Puppetg5k
 
 class Openstack
   include Mixlib::CLI
+  option :base_uri,
+    :short        => "-u URI",
+    :long         => "--uri URI",
+    :description  => "API Base URI (default: stable API)",
+    :default      => "https://api.grid5000.fr/stable/grid5000"
 
-  option :config_file,
-    :short        => "-c CONFIG",
-    :long         => "--config CONFIG",
-    :default      => "openstackg5k.yml",
-    :description  => "The configuration file to use"
+  option :nodes,
+    :short        => "-n NUM Nodes",
+    :long         => "--nodes Num Nodes",
+    :description  => "Number of nodes (default: 4)",
+    :default      => 4
+
+  option :walltime,
+    :short        => "-w WALLTIME",
+    :long         => "--walltime WALLTIME",
+    :description  => "Walltime of the job (default: 2) hours",
+    :default      => "02:00:00"
+
+  option :site,
+    :short        => "-s SITE",
+    :long         => "--site SITE",
+    :description  => "Site to launch job (default: #{%x[hostname -f].split('.')[1]})",
+    :default      => "#{%x[hostname -f].split('.')[1]}"
+
+  option :job_name,
+    :short        => "-j JOB_NAME",
+    :long         => "--name JOB_NAME",
+    :description  => "The name of the job (default: openstackg5k)",
+    :default      => "openstackg5k"
+
+  option :env,
+    :short        => "-e ENV_NAME",
+    :long         => "--env ENV_NAME",
+    :description  => "Name of then environment to deploy (default: wheezy-x64-br)",
+    :default      => "wheezy-x64-br"
+
+  option :key,
+    :short        => "-k KEY",
+    :long         => "--key KEY",
+    :description  => "Name of then SSH key for the deployment (default: /home/sbadia/.ssh/id_dsa.pub)",
+    :default      => "/home/sbadia/.ssh/id_dsa.pub"
 
   option :log_level,
     :short        => "-l LEVEL",
     :long         => "--log-level LEVEL",
     :description  => "Set log level (debug, info, warn, error, fatal)",
-    :default      => "warn",
-    :proc         => Proc.new { |l| l.to_sym }
+    :default      => "warn"
 
   option :no_clean,
-    :short        => "-n",
+    :short        => "-c",
     :long         => "--no-clean",
     :description  => "Disable restfully clean (jobs/deploy)",
     :boolean      => true
@@ -77,27 +111,19 @@ class Openstack
   end # def:: runos
 
   def launch_os
-    if File.exist?(config[:config_file])
-      conf = YAML.load_file(config[:config_file])
-      $log.info "Use config file #{config[:config_file]}"
-    else
-      $log.error "No conf file"
-      exit 1
-    end
-
     begin
-      Restfully::Session.new(:logger => $log, :cache => conf['cache'], :base_uri => conf['base_uri']) do |root,rsession|
-        site = root.sites[:"#{conf['site']}"]
+      Restfully::Session.new(:logger => $log, :cache => false, :base_uri => config[:base_uri]) do |root,rsession|
+        site = root.sites[:"#{config[:site]}"]
         if site.status.find{ |node| node['system_state'] == 'free' && node['hardware_state'] == 'alive' } then
-          rsession.logger.info "Job: #nodes => #{conf['nodes']}, type => {type='kavlan'}/vlan=1"
+          rsession.logger.info "Job: #nodes => #{config[:nodes]}, type => {type='kavlan'}/vlan=1"
           new_job = site.jobs.submit(
-            :resources => "{type='kavlan'}/vlan=1+/nodes=#{conf['nodes']},walltime=#{conf['walltime_hours']}",
-            :command => "sleep #{(conf['walltime_hours'].to_i)*7200}",
+            :resources => "{type='kavlan'}/vlan=1+/nodes=#{config[:nodes]},walltime=#{config[:walltime]}",
+            :command => "sleep #{(config[:walltime].to_i)*7200}",
             :types => ["deploy"],
-            :name => conf['job_name']) rescue nil
+            :name => config[:job_name]) rescue nil
           $jobs.push(new_job) unless new_job.nil?
         else
-          rsession.logger.warn "No enough free node on #{conf['site']} site"
+          rsession.logger.warn "No enough free node on #{config[:site]} site"
           exit 1
         end
 
@@ -120,8 +146,8 @@ class Openstack
         $jobs.each do |job|
           next if job.reload['state'] != 'running'
           $vlan = Openstackg5k::get_vlan_property(job['uid'])
-          rsession.logger.info "Deploy: env => #{conf['env']}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
-          new_deploy = job.parent.deployments.submit(:environment => conf['env'], :nodes => job['assigned_nodes'], :key => File.read(conf['key']), :vlan => $vlan.to_s) rescue nil
+          rsession.logger.info "Deploy: env => #{config[:env]}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
+          new_deploy = job.parent.deployments.submit(:environment => config[:env], :nodes => job['assigned_nodes'], :key => File.read(config[:key]), :vlan => $vlan.to_s) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?
         end
 
@@ -140,7 +166,7 @@ class Openstack
           next if deployment.reload['status'] != 'terminated'
           good = []
           deployment['nodes'].each do |conv|
-            good << "#{conv.split('.')[0]}-kavlan-#{$vlan.to_s}.#{conf['site']}.grid5000.fr"
+            good << "#{conv.split('.')[0]}-kavlan-#{$vlan.to_s}.#{config[:site]}.grid5000.fr"
           end
           nodes = good.dup
           Puppetg5k::clush_nodes(good)
@@ -169,6 +195,8 @@ class Openstack
               system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
             end
             Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
+            session.loop
+            Openstackg5k::nexec(session,"/etc/init.d/nova-compute restart",args = { :group => :compute, :critical => false, :showout => true})
             session.loop
           end # Net::SSH::Multi
         end # $deploy.each
