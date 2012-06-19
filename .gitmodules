@@ -49,3 +49,6 @@
 [submodule "modules/openstack"]
 	path = modules/openstack
 	url = https://github.com/puppetlabs/puppetlabs-openstack.git
+[submodule "modules/apt"]
+	path = modules/apt
+	url = https://github.com/puppetlabs/puppetlabs-apt
