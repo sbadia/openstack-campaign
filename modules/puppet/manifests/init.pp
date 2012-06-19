@@ -17,16 +17,22 @@ class puppet::base {
 
   package {
     "puppet":
-      ensure => installed,
-      require => [File["source puppetlabs"],Exec["sources update"]];
+      ensure => installed;
   }
 
-  include "uapt::allowunauthenticated"
-
-  uapt::source {
+  apt::source {
     "puppetlabs":
-      source => "puppet:///modules/puppet/repo/puppetlabs.list",
-      unauth => true;
+      location => "http://apt.puppetlabs.com/",
+      release => $lsbdistcodename,
+      repos => "main",
+      key => "4BD6EC30";
+  }
+
+  apt::key {
+    "puppetlabs":
+      key => "4BD6EC30",
+      key_source => "/root/puppet-gpg.asc",
+      require => File["/root/puppet-gpg.asc"];
   }
 
   file {
@@ -49,15 +55,6 @@ class puppet::base {
       group   => root,
       mode    => 644;
   }
-
-  exec {
-    "Import puppet key":
-      command       => "/bin/cat /root/puppet-gpg.asc | /usr/bin/apt-key add -",
-      path          => "/usr/sbin:/bin:/usr/bin",
-      unless        => "/usr/bin/apt-key list | /bin/grep Puppet",
-      user	  => root,
-      require	  => File["/root/puppet-gpg.asc"];
-  }
 } # Class:: puppet::base
 
 # Class:: puppet::master inherits puppet::base
@@ -66,8 +63,7 @@ class puppet::base {
 class puppet::master inherits puppet::base {
   package {
     ["puppetmaster","libmysql-ruby","build-essential","libmysqlclient-dev"]:
-      ensure => installed,
-      require => [File["source puppetlabs"],Exec["sources update"]];
+      ensure => installed;
     "mysql":
       ensure => installed,
       provider => gem,
