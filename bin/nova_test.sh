@@ -46,3 +46,4 @@ export SERVICE_ENDPOINT=
 keystone catalog --service=ec2
 keystone ec2-credentials-create
 keystone ec2-credentials-list
+. /root/openrc
