@@ -69,7 +69,10 @@ namespace :modules do
       `rm -rf #{outpath}`
     end
   end
-
+  desc 'update submodules'
+  task :subup do
+    `git submodule foreach git pull origin master`
+  end
 end
 
 def bump_version(level)
