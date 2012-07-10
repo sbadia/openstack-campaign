@@ -54,8 +54,8 @@ class Openstack
   option :env,
     :short        => "-e ENV_NAME",
     :long         => "--env ENV_NAME",
-    :description  => "Name of then environment to deploy (default: wheezy-x64-br)",
-    :default      => "wheezy-x64-br"
+    :description  => "Name of then environment to deploy (default: wheezy-x64-br@sbadia)",
+    :default      => "wheezy-x64-br@sbadia"
 
   option :key,
     :short        => "-k KEY",
