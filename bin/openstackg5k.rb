@@ -54,8 +54,8 @@ class Openstack
   option :env,
     :short        => "-e ENV_NAME",
     :long         => "--env ENV_NAME",
-    :description  => "Name of then environment to deploy (default: wheezy-x64-br@sbadia)",
-    :default      => "wheezy-x64-br@sbadia"
+    :description  => "Name of then environment to deploy (default: ubuntu-x64-br@sbadia)",
+    :default      => "ubuntu-x64-br@sbadia"
 
   option :key,
     :short        => "-k KEY",
@@ -87,7 +87,7 @@ class Openstack
   option :version,
     :short        => "-v",
     :long         => "--version",
-    :description  => "Show mkmotd version",
+    :description  => "Show Openstackg5k version",
     :boolean      => true,
     :proc         => lambda {|v| puts Openstackg5k::VERSION},
     :exit         => 0
