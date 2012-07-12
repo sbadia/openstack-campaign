@@ -32,7 +32,7 @@ EOF
 # deploy a script that can be used to test nova
 file {
   "/tmp/nova.sh":
-    source  => "puppet:///modules/puppet/files/nova_test.sh",
+    source  => "puppet:///modules/puppet/nova_test.sh",
     ensure  => file,
     owner   => root,
     group   => root,
