@@ -38,12 +38,13 @@ nova show ${NAME}_vm
 sleep 20
 #nova add-floating-ip precise_vm $floating_ip
 sleep 10
-#ssh ubuntu@$floating_ip -i /tmp/id_rsa
+IP=`nova show cirros_vm |grep novanetwork|awk '{print $5}'`
+ssh cirros@${IP} -i /tmp/id_rsa
 #nova show cirros_vm
 ## create ec2 credentials
-export SERVICE_TOKEN=
-export SERVICE_ENDPOINT=
-keystone catalog --service=ec2
-keystone ec2-credentials-create
-keystone ec2-credentials-list
-. /root/openrc
+#export SERVICE_TOKEN=
+#export SERVICE_ENDPOINT=
+#keystone catalog --service=ec2
+#keystone ec2-credentials-create
+#keystone ec2-credentials-list
+#. /root/openrc
