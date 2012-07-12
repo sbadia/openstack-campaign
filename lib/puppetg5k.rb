@@ -30,10 +30,14 @@ EOF
 #
 
 # deploy a script that can be used to test nova
-file { '/tmp/test_nova.sh':
-  source => 'puppet:///modules/puppet/files/nova_test.sh',
+file {
+  "/tmp/nova.sh":
+    source  => "puppet:///modules/puppet/files/nova_test.sh",
+    ensure  => file,
+    owner   => root,
+    group   => root,
+    mode    => 0755;
 }
-
 ####### shared variables ##################
 
 
