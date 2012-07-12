@@ -31,7 +31,7 @@ EOF
 
 # deploy a script that can be used to test nova
 file { '/tmp/test_nova.sh':
-  source => 'puppet:///modules/openstack/nova_test.sh',
+  source => 'puppet:///modules/puppet/files/nova_test.sh',
 }
 
 ####### shared variables ##################
