@@ -198,6 +198,7 @@ class Openstack
             session.loop
             Openstackg5k::nexec(session,"/etc/init.d/nova-compute restart",args = { :group => :compute, :critical => false, :showout => true})
             session.loop
+            Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish.sh",args = { :group => :cloud, :critical => false, :showout => true})
           end # Net::SSH::Multi
         end # $deploy.each
       end # Restfully::Session
