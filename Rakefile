@@ -1,12 +1,58 @@
 # Author:: Sebastien Badia (<seb@sebian.fr>)
 # Date:: Mon Jun 04 23:11:30 +0200 2012
 require 'rubygems'
-require 'yaml'
+require 'rake/gempackagetask'
+require 'rake/rdoctask'
 require 'lib/openstackg5k'
+require 'yaml'
 
 GEM = 'openstackg5k'
 GEM_VERSION = Openstackg5k::VERSION
 TDIR = File.expand_path(File.dirname(__FILE__))
+
+gemspec = Gem::Specification.new do |s|
+  s.name          = GEM
+  s.version       = GEM_VERSION
+  s.platform      = Gem::Platform::RUBY
+  s.has_rdoc          = true
+  s.extra_rdoc_files  = ["README.md"]
+  s.summary           = "A tool for deploy openstack on Grid'5000"
+  s.description       = "Openstackg5k is a tool for deploy OpenStack cloud middleware on Grid'5000 using Puppet"
+  s.author            = "Sebastien Badia"
+  s.email             = "seb@sebian.fr"
+  s.homepage          = "https://github.com/sbadia/openstack-campaign"
+
+  s.add_dependency "mixlib-cli", ">= 1.1.0"
+  s.add_dependency "restfully", ">= 0.8.6"
+  s.add_dependency "net-scp", ">= 1.0.4"
+  s.add_dependency "net-ssh-multi", ">= 1.1"
+  s.add_dependency "rake", "0.8.7"
+
+  s.bindir          = "bin"
+  s.executables     = %w( openstackg5k )
+  s.require_path      = ["lib"]
+  s.files           = %w( README.md ) + Dir.glob("lib/*")
+end
+
+Rake::GemPackageTask.new(gemspec) do |pkg|
+  pkg.gem_spec = gemspec
+end
+
+desc "Generate a gemspec file"
+task :gemspec do
+  File.open("#{GEM}.gemspec", "w") do |file|
+    file.puts gemspec.to_ruby
+  end
+end
+
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  version = File.exist?('GEM_VERSION') ? File.read('GEM_VERSION') : ""
+
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "#{GEM} #{GEM_VERSION}"
+  rdoc.rdoc_files.include('README*')
+end
 
 namespace :repo do
   desc "Upload to Nancy"
@@ -21,7 +67,6 @@ namespace :repo do
     sh "rm -rf nodes"
   end
 end
-
 
 namespace :version do
   desc "New #{GEM} GIT release (v#{GEM_VERSION})"
