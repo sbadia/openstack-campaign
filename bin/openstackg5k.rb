@@ -202,6 +202,7 @@ class Openstack
             Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
             session.loop
             Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_compute.sh",args = { :group => :compute, :critical => false, :showout => false})
+            rsession.logger.info "It's ok ! You can now connect to the cloud controller (ssh root@#{ctrl.to_s})"
           end # Net::SSH::Multi
         end # $deploy.each
       end # Restfully::Session

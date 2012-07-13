@@ -18,28 +18,35 @@ elif [[ "$OS" == "cirros" ]]; then
 fi
 
 # download
+echo "--> download $IMG image..."
 wget http://public.lille.grid5000.fr/~sbadia/$IMG.img
 # import that image into glance
+echo "--> add downloaded image to glance..."
 glance add name="$NAME-amd64" is_public=true container_format=ovf disk_format=qcow2 < $IMG.img
 IMAGE_ID=`glance index | grep "$NAME-amd64" | head -1 |  awk -F' ' '{print $1}'`
 ## create a pub key
+echo "--> create a ssh key (key_$NAME)..."
 ssh-keygen -f /tmp/id_rsa -t rsa -N ''
 nova keypair-add --pub_key /tmp/id_rsa.pub key_$NAME
+echo "--> init (tcp 22/ tcp 80/ icmp) security groups (${NAME}_test)..."
 nova secgroup-create ${NAME}_test "$NAME test security group"
 nova secgroup-add-rule ${NAME}_test tcp 22 22 0.0.0.0/0
 nova secgroup-add-rule ${NAME}_test tcp 80 80 0.0.0.0/0
 nova secgroup-add-rule ${NAME}_test icmp -1 -1 0.0.0.0/0
-
 #floating_ip=`nova floating-ip-create | grep None | awk '{print $2}'`
+echo "--> boot a vm (${NAME}_vm)..."
 nova boot --flavor 1 --security_groups ${NAME}_test --image ${IMAGE_ID} --key_name key_$NAME ${NAME}_vm
 sleep 5
+echo "--> show ${NAME}_vm status..."
 nova show ${NAME}_vm
 # wait for the server to boot
 sleep 20
 #nova add-floating-ip precise_vm $floating_ip
 sleep 10
 IP=`nova show cirros_vm |grep novanetwork|awk '{print $5}'`
-ssh cirros@${IP} -i /tmp/id_rsa
+echo "--> It's ok, you can sshing by run this command..."
+echo "ssh cirros@${IP} -i /tmp/id_rsa"
+#ssh cirros@${IP} -i /tmp/id_rsa
 #nova show cirros_vm
 ## create ec2 credentials
 #export SERVICE_TOKEN=
