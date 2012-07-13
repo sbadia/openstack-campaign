@@ -1,8 +1,6 @@
 # vi: set ft=changelog :
 Sebastien Badia - Sebian <se@sebian.fr>
   * tests:
-    - nombre de noeuds mini pour une xp
     - nova-manage bd sync
   * features:
-    - gestion ip virtuelles (g5k) et floating ips
-    - gestion nova-volumes (custom)
+    - gestion ip virtuelles (g5k) => working in nova, but un-reserved on g5k…
