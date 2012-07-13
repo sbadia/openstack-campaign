@@ -115,9 +115,9 @@ class Openstack
   def launch_os
     begin
       if ! config[:volumes].nil?
-        DENV = "ubuntu-x64-1204-custom@sbadia"
+        deploy_env = "ubuntu-x64-1204-custom@sbadia"
       else
-        DENV = "ubuntu-x64-br@sbadia"
+        deploy_env = "ubuntu-x64-br@sbadia"
       end
       Restfully::Session.new(:logger => $log, :cache => false, :base_uri => config[:base_uri]) do |root,rsession|
         site = root.sites[:"#{config[:site]}"]
@@ -153,8 +153,8 @@ class Openstack
         $jobs.each do |job|
           next if job.reload['state'] != 'running'
           $vlan = Openstackg5k::get_vlan_property(job['uid'])
-          rsession.logger.info "Deploy: env => #{DENV}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
-          new_deploy = job.parent.deployments.submit(:environment => DENV, :nodes => job['assigned_nodes'], :key => File.read(config[:key]), :vlan => $vlan.to_s) rescue nil
+          rsession.logger.info "Deploy: env => #{deploy_env}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
+          new_deploy = job.parent.deployments.submit(:environment => deploy_env, :nodes => job['assigned_nodes'], :key => File.read(config[:key]), :vlan => $vlan.to_s) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?
         end
 
