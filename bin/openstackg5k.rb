@@ -51,11 +51,11 @@ class Openstack
     :description  => "The name of the job (default: openstackg5k)",
     :default      => "openstackg5k"
 
-  option :env,
-    :short        => "-e ENV_NAME",
-    :long         => "--env ENV_NAME",
-    :description  => "Name of then environment to deploy (default: ubuntu-x64-br@sbadia)",
-    :default      => "ubuntu-x64-br@sbadia"
+  option :volumes,
+    :short        => "-v",
+    :long         => "--volumes",
+    :description  => "Enable Nova Volumes feature (ISCSI) (ubuntu-x64-br@sbadia/ubuntu-x64-1204-custom@sbadia)",
+    :boolean      => true
 
   option :key,
     :short        => "-k KEY",
@@ -85,7 +85,7 @@ class Openstack
     :exit         => 0
 
   option :version,
-    :short        => "-v",
+    :short        => "-V",
     :long         => "--version",
     :description  => "Show Openstackg5k version",
     :boolean      => true,
@@ -103,8 +103,10 @@ class Openstack
 
     %w{INT TERM}.each do |sig|
       Signal.trap(sig){
-        Openstackg5k::clean!
-        exit(1)
+        if ! config[:no_clean].nil?
+          Openstackg5k::clean!
+          exit 1
+        end
       }
     end
     launch_os
@@ -112,6 +114,11 @@ class Openstack
 
   def launch_os
     begin
+      if ! config[:volumes].nil?
+        DENV = "ubuntu-x64-1204-custom@sbadia"
+      else
+        DENV = "ubuntu-x64-br@sbadia"
+      end
       Restfully::Session.new(:logger => $log, :cache => false, :base_uri => config[:base_uri]) do |root,rsession|
         site = root.sites[:"#{config[:site]}"]
         if site.status.find{ |node| node['system_state'] == 'free' && node['hardware_state'] == 'alive' } then
@@ -146,8 +153,8 @@ class Openstack
         $jobs.each do |job|
           next if job.reload['state'] != 'running'
           $vlan = Openstackg5k::get_vlan_property(job['uid'])
-          rsession.logger.info "Deploy: env => #{config[:env]}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
-          new_deploy = job.parent.deployments.submit(:environment => config[:env], :nodes => job['assigned_nodes'], :key => File.read(config[:key]), :vlan => $vlan.to_s) rescue nil
+          rsession.logger.info "Deploy: env => #{DENV}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
+          new_deploy = job.parent.deployments.submit(:environment => DENV, :nodes => job['assigned_nodes'], :key => File.read(config[:key]), :vlan => $vlan.to_s) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?
         end
 
@@ -189,8 +196,12 @@ class Openstack
             end
             # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
             rsession.logger.info "Install the prerequisite packages..."
-            Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail -y --force-yes", args = {:showout => false})
+            Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail lvm2 -y --force-yes", args = {:showout => false})
             session.loop
+            if ! config[:volumes].nil?
+              Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate nova-volumes /dev/sda2",args = {:showout => false})
+              session.loop
+            end
             good.each do |nod|
               rsession.logger.info "Upload puppet modules on #{nod}..."
               system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
@@ -208,10 +219,10 @@ class Openstack
       end # Restfully::Session
     rescue => e
       $log.error "Catched unexpected exception #{e.class.name}: #{e.message} - #{e.backtrace.join("\n")}"
-      if ! config[:no_clean].nil?:
+      if ! config[:no_clean].nil?
         Openstackg5k::clean!
+        exit 1
       end
-      exit 1
     end
   end # def:: launch_os
 end # class:: Openstackg5k
