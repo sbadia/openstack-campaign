@@ -37,7 +37,7 @@ The recommended location for this file is in `~/.restfully/api.grid5000.fr.yml`.
 
 # Openstackg5k
 ## Usage
-    $ ruby bin/openstackg5k.rb -h
+    $ ruby bin/openstackg5k -h
     * Usage: bin/openstackg5k.rb (options)
         -u, --uri URI                    API Base URI (default: stable API)
         -e, --env ENV_NAME               Name of then environment to deploy (default: ubuntu-x64-br@sbadia)
@@ -52,7 +52,7 @@ The recommended location for this file is in `~/.restfully/api.grid5000.fr.yml`.
         -h, --help                       Show this message
 
 ## Launch an experiment
-    $ ruby bin/openstackg5k.rb --nodes 2 --walltime 5 --no-clean
+    $ ruby bin/openstackg5k --nodes 2 --walltime 5 --no-clean
 
 sshing on the cloud controller (first node) and run.
 
