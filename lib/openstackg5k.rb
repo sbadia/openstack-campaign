@@ -121,4 +121,12 @@ module Openstackg5k
     channel.wait
     return outs
   end # def:: nexec
+
+  def ssh_key
+    pub_key = Dir[File.expand_path("~/.ssh/*.pub")][0]
+    fail "No public key available in ~/.ssh !" if pub_key.nil?
+    priv_key = File.expand_path("~/.ssh/#{File.basename(pub_key, ".pub")}")
+    fail "No private key corresponding to the public key available in ~/.ssh !" unless File.file?(priv_key)
+    return pub_key
+  end # def:: ssh_key
 end # module:: Openstackg5k
