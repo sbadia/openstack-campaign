@@ -116,8 +116,12 @@ class Openstack
     begin
       if ! config[:volumes].nil?
         deploy_env = "ubuntu-x64-1204-custom@sbadia"
+        timeout_dep = 1200
+        wait_dep = 50
       else
         deploy_env = "ubuntu-x64-br@sbadia"
+        timeout_dep = 900
+        wait_dep = 30
       end
       Restfully::Session.new(:logger => $log, :cache => false, :base_uri => config[:base_uri]) do |root,rsession|
         site = root.sites[:"#{config[:site]}"]
@@ -159,10 +163,10 @@ class Openstack
         end
 
         begin
-          Timeout.timeout(900) do
+          Timeout.timeout(timeout_dep) do
             until $deploy.all?{ |deployment| deployment.reload['status'] != 'processing' } do
               rsession.logger.info "Some deployments are not terminated. Waiting before checking again..."
-              sleep 30
+              sleep wait_dep
             end
           end
         rescue Timeout::Error => e
