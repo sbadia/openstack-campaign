@@ -60,8 +60,8 @@ class Openstack
   option :key,
     :short        => "-k KEY",
     :long         => "--key KEY",
-    :description  => "Name of then SSH key for the deployment (default: /home/sbadia/.ssh/id_dsa.pub)",
-    :default      => "/home/sbadia/.ssh/id_dsa.pub"
+    :description  => "Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
+    :default      => Openstackg5k::ssh_key
 
   option :log_level,
     :short        => "-l LEVEL",
