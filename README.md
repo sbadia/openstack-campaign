@@ -10,12 +10,12 @@ distributed computing and networking.
 
 # Launch tests
     gem install g5k-campaign --source http://g5k-campaign.gforge.inria.fr/pkg --user-install --no-ri --no-rdoc -p http://proxy:3128
-    git clone git://github.com/sbadia/openstack-campaign.git
+    https_proxy='http://proxy:3128' git clone https://github.com/sbadia/openstack-campaign.git
     ruby bin/openstackg5k.rb -h
     ruby bin/openstackg5k.rb --nodes 2 --walltime 5 --no-clean
 
     sshing on the cloud controller (first node).
-    bash nova_test.sh
+    bash nova_test.sh cirros
 
 ## Dashboard
     ssh -L 8888:cloud-controller:80 nancy.user

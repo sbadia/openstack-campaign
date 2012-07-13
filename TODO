@@ -4,3 +4,4 @@ Sebastien Badia - Sebian <se@sebian.fr>
     - gestion des clées ssh (test de présence,choix,option)
     - nombre de noeuds mini pour une xp
     - nova-manage bd sync
+    - gestion ssh key+tests
