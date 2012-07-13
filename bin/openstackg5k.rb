@@ -30,14 +30,14 @@ class Openstack
   option :nodes,
     :short        => "-n NUM Nodes",
     :long         => "--nodes Num Nodes",
-    :description  => "Number of nodes (default: 4)",
-    :default      => 4
+    :description  => "Number of nodes (default: 1)",
+    :default      => 2
 
   option :walltime,
     :short        => "-w WALLTIME",
     :long         => "--walltime WALLTIME",
-    :description  => "Walltime of the job (default: 2) hours",
-    :default      => "02:00:00"
+    :description  => "Walltime of the job (default: 1) hours",
+    :default      => "01:00:00"
 
   option :site,
     :short        => "-s SITE",
