@@ -30,7 +30,7 @@ class Openstack
   option :nodes,
     :short        => "-n NUM Nodes",
     :long         => "--nodes Num Nodes",
-    :description  => "Number of nodes (default: 1)",
+    :description  => "Number of nodes (default: 2)",
     :default      => 2
 
   option :walltime,
