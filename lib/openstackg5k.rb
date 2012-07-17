@@ -4,7 +4,7 @@
 module Openstackg5k
   $startt = Time::now
 
-  VERSION = "0.1.0"
+  VERSION = "0.1.1"
   MSG_ERROR=0       # Exit return codes
   MSG_WARNING=1
   MSG_INFO=2
