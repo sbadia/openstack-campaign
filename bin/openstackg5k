@@ -231,7 +231,7 @@ class Openstack
               system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
             end
             rsession.logger.info "Install OpenStack using puppet..."
-            Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => false})
+            Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
             session.loop
             rsession.logger.info "(#{time_elapsed}s) Finish install..."
             Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})

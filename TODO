@@ -6,6 +6,5 @@ Sebastien Badia - Sebian <se@sebian.fr>
     - gestion ip virtuelles (g5k) => working in nova, but un-reserved on g5k…
 
 
-  * Ecole: afficher les outputs puppet (pour meubler)
   * vm ip pub: ip addr show
   * ec2_api: unset pour la variable
