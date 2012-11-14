@@ -228,6 +228,7 @@ class Openstack
             Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail lvm2 -y --force-yes", args = {:showout => false})
             session.loop
             if ! config[:volumes].nil?
+              rsession.logger.info "(#{Openstackg5k::time_elapsed}s) Configure nova-volumes (create pv and vg)..."
               Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate nova-volumes /dev/sda2",args = {:showout => false})
               session.loop
             end
