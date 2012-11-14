@@ -41,47 +41,12 @@ include Puppetg5k
 
 class Openstack
   include Mixlib::CLI
-  option :base_uri,
-    :short        => "-u URI",
-    :long         => "--uri URI",
-    :description  => "API Base URI (default: stable API)",
-    :default      => "https://api.grid5000.fr/stable/grid5000"
 
-  option :nodes,
-    :short        => "-n NUM Nodes",
-    :long         => "--nodes Num Nodes",
-    :description  => "Number of nodes (default: 2)",
-    :default      => 2
-
-  option :walltime,
-    :short        => "-w WALLTIME",
-    :long         => "--walltime WALLTIME",
-    :description  => "Walltime of the job (default: 1) hours",
-    :default      => "01:00:00"
-
-  option :site,
-    :short        => "-s SITE",
-    :long         => "--site SITE",
-    :description  => "Site to launch job (default: #{%x[hostname -f].split('.')[1]})",
-    :default      => "#{%x[hostname -f].split('.')[1]}"
-
-  option :job_name,
-    :short        => "-j JOB_NAME",
-    :long         => "--name JOB_NAME",
-    :description  => "The name of the job (default: openstackg5k)",
-    :default      => "openstackg5k"
-
-  option :volumes,
-    :short        => "-v",
-    :long         => "--volumes",
-    :description  => "Enable Nova Volumes feature (ISCSI) (ubuntu-x64-br@sbadia/ubuntu-x64-1204-custom@sbadia)",
+  option :no_clean,
+    :short        => "-c",
+    :long         => "--no-clean",
+    :description  => "Disable restfully clean (jobs/deploy)",
     :boolean      => true
-
-  option :key,
-    :short        => "-k KEY",
-    :long         => "--key KEY",
-    :description  => "Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
-    :default      => Openstackg5k::ssh_key
 
   option :debug,
     :short        => "-d",
@@ -90,10 +55,10 @@ class Openstack
     :boolean      => true,
     :proc         => nil
 
-  option :no_clean,
-    :short        => "-c",
-    :long         => "--no-clean",
-    :description  => "Disable restfully clean (jobs/deploy)",
+  option :educational,
+    :short        => "-e",
+    :long         => "--more-educational-please",
+    :description  => "Bypass submission and deployment (for Grid'5000 School 2012)",
     :boolean      => true
 
   option :help,
@@ -105,6 +70,48 @@ class Openstack
     :show_options => true,
     :exit         => 0
 
+  option :input,
+    :short        => "-i",
+    :long         => "--input",
+    :description  => "Provide input node file (kavlan style) use it with '-e' option is provided",
+    :default      => nil
+
+  option :job_name,
+    :short        => "-j JOB_NAME",
+    :long         => "--name JOB_NAME",
+    :description  => "The name of the job (default: openstackg5k)",
+    :default      => "openstackg5k"
+
+  option :key,
+    :short        => "-k KEY",
+    :long         => "--key KEY",
+    :description  => "Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
+    :default      => Openstackg5k::ssh_key
+
+  option :nodes,
+    :short        => "-n NUM Nodes",
+    :long         => "--nodes Num Nodes",
+    :description  => "Number of nodes (default: 2)",
+    :default      => 2
+
+  option :site,
+    :short        => "-s SITE",
+    :long         => "--site SITE",
+    :description  => "Site to launch job (default: #{%x[hostname -f].split('.')[1]})",
+    :default      => "#{%x[hostname -f].split('.')[1]}"
+
+  option :base_uri,
+    :short        => "-u URI",
+    :long         => "--uri URI",
+    :description  => "API Base URI (default: stable API)",
+    :default      => "https://api.grid5000.fr/stable/grid5000"
+
+  option :volumes,
+    :short        => "-v",
+    :long         => "--volumes",
+    :description  => "Enable Nova Volumes feature (ISCSI) (ubuntu-x64-br@sbadia/ubuntu-x64-1204-custom@sbadia)",
+    :boolean      => true
+
   option :version,
     :short        => "-V",
     :long         => "--version",
@@ -113,6 +120,11 @@ class Openstack
     :proc         => lambda {|v| puts Openstackg5k::VERSION},
     :exit         => 0
 
+  option :walltime,
+    :short        => "-w WALLTIME",
+    :long         => "--walltime WALLTIME",
+    :description  => "Walltime of the job (default: 1) hours",
+    :default      => "01:00:00"
 
   def runos
     parse_options
@@ -133,7 +145,11 @@ class Openstack
         end
       }
     end
-    launch_os
+    if config[:educational]
+      educational
+    else
+      launch_os
+    end
   end # def:: runos
 
   def execute(good)
@@ -179,6 +195,10 @@ class Openstack
       $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
     end # Net::SSH::Multi
   end # def:: execute
+
+  def educational
+
+  end # def:: educational
 
   def launch_os
     begin
