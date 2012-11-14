@@ -83,11 +83,12 @@ class Openstack
     :description  => "Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
     :default      => Openstackg5k::ssh_key
 
-  option :log_level,
-    :short        => "-l LEVEL",
-    :long         => "--log-level LEVEL",
-    :description  => "Set log level (debug, info, warn, error, fatal)",
-    :default      => "warn"
+  option :debug,
+    :short        => "-d",
+    :long         => "--debug",
+    :description  => "Enable debuging outputs",
+    :boolean      => true,
+    :proc         => nil
 
   option :no_clean,
     :short        => "-c",
@@ -116,8 +117,11 @@ class Openstack
   def runos
     parse_options
     $log = Logger.new(STDOUT)
-    #$log.level = Logger::config[:log_level].to_s.upcase
-    $log.level = Logger::INFO
+    if config[:debug]
+      $log.level = Logger::DEBUG
+    else
+      $log.level = Logger::WARN
+    end
     $jobs = []
     $deploy = []
 
