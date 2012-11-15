@@ -1,0 +1,42 @@
+root@griffon-90-kavlan-4:~# export SERVICE_TOKEN=
+root@griffon-90-kavlan-4:~# export SERVICE_ENDPOINT=
+root@griffon-90-kavlan-4:~# keystone catalog --service=ec2
+Service: ec2
++-------------+---------------------------------------+
+|   Property  |                 Value                 |
++-------------+---------------------------------------+
+| adminURL    | http://10.16.1.90:8773/services/Admin |
+| internalURL | http://10.16.1.90:8773/services/Cloud |
+| publicURL   | http://10.16.1.90:8773/services/Cloud |
+| region      | RegionOne                             |
++-------------+---------------------------------------+
+root@griffon-90-kavlan-4:~# keystone ec2-credentials-create
++-----------+----------------------------------+
+|  Property |              Value               |
++-----------+----------------------------------+
+| access    | 4cf6fa9584e04771b9a7a45ae354f1df |
+| secret    | 76d0279568c345fe8294685e1e4d3013 |
+| tenant_id | a56366e5b1ef4140b421e99ff6a92905 |
+| user_id   | ac058c7bb84a4fa3afb9dca88e04ad32 |
++-----------+----------------------------------+
+root@griffon-90-kavlan-4:~# ls
+cirros-0.3.0-x86_64-disk.img  openrc  postinst.log  puppet-gpg.asc
+root@griffon-90-kavlan-4:~# keystone ec2-credentials-list
++-----------+----------------------------------+----------------------------------+
+|   tenant  |              access              |              secret              |
++-----------+----------------------------------+----------------------------------+
+| openstack | 4cf6fa9584e04771b9a7a45ae354f1df | 76d0279568c345fe8294685e1e4d3013 |
++-----------+----------------------------------+----------------------------------+
+
+nova-manage network delete 10.0.0.0/24
+nova-manage network create --label=public --fixed_range_v4=10.0.0.0/24 --num_networks=1 --network_size=254 --dns1=172.16.79.106 --bridge_interface=eth0 --bridge=br100
+
+mysql -D nova -e "update networks set dns1='10.16.63.254' where dns1='8.8.4.4';"
+mysql -D nova -e "update networks set bridge_interface='eth0' where bridge_interface='br100';"
+nova-manage bd sync
+
+--flat_interface=eth0
+--flat_injected=True
+
+scp ubuntu.png root@graphene-10-kavlan-4.nancy.user:/usr/share/openstack-dashboard/openstack_dashboard/static/dashboard/img/
+iptables -t nat -A PREROUTING -d 169.254.169.254/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 10.16.2.113:8773
