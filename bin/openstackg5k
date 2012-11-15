@@ -28,6 +28,7 @@ $: << File.join(File.dirname(__FILE__), "..", "lib")
 require 'openstackg5k'
 require 'puppetg5k'
 require 'rubygems'
+require 'pp'
 require 'mixlib/cli'
 require 'restfully'
 require 'net/ssh'
@@ -197,7 +198,20 @@ class Openstack
   end # def:: execute
 
   def educational
-
+    if config[:input] != nil
+      input = IO::readlines(config[:input]).map { |l| l.chomp }
+      input.each do |node|
+        if !(node =~ /-kavlan-/ )
+          $log.error "Nodes passed are not KaVLAN fqdn, please check (#{node})..."
+          exit 2
+        end
+      end
+      # Launch openstak deployment
+      execute(input)
+    else
+      $log.error "No nodes provided (OpenStack install aborded)..."
+      exit 2
+    end
   end # def:: educational
 
   def launch_os
