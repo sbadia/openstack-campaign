@@ -28,6 +28,7 @@ $: << File.join(File.dirname(__FILE__), "..", "lib")
 require 'openstackg5k'
 require 'puppetg5k'
 require 'rubygems'
+require 'pp'
 require 'mixlib/cli'
 require 'restfully'
 require 'net/ssh'
@@ -41,83 +42,97 @@ include Puppetg5k
 
 class Openstack
   include Mixlib::CLI
-  option :base_uri,
-    :short        => "-u URI",
-    :long         => "--uri URI",
-    :description  => "API Base URI (default: stable API)",
-    :default      => "https://api.grid5000.fr/stable/grid5000"
-
-  option :nodes,
-    :short        => "-n NUM Nodes",
-    :long         => "--nodes Num Nodes",
-    :description  => "Number of nodes (default: 2)",
-    :default      => 2
-
-  option :walltime,
-    :short        => "-w WALLTIME",
-    :long         => "--walltime WALLTIME",
-    :description  => "Walltime of the job (default: 1) hours",
-    :default      => "01:00:00"
-
-  option :site,
-    :short        => "-s SITE",
-    :long         => "--site SITE",
-    :description  => "Site to launch job (default: #{%x[hostname -f].split('.')[1]})",
-    :default      => "#{%x[hostname -f].split('.')[1]}"
-
-  option :job_name,
-    :short        => "-j JOB_NAME",
-    :long         => "--name JOB_NAME",
-    :description  => "The name of the job (default: openstackg5k)",
-    :default      => "openstackg5k"
-
-  option :volumes,
-    :short        => "-v",
-    :long         => "--volumes",
-    :description  => "Enable Nova Volumes feature (ISCSI) (ubuntu-x64-br@sbadia/ubuntu-x64-1204-custom@sbadia)",
-    :boolean      => true
-
-  option :key,
-    :short        => "-k KEY",
-    :long         => "--key KEY",
-    :description  => "Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
-    :default      => Openstackg5k::ssh_key
-
-  option :log_level,
-    :short        => "-l LEVEL",
-    :long         => "--log-level LEVEL",
-    :description  => "Set log level (debug, info, warn, error, fatal)",
-    :default      => "warn"
 
   option :no_clean,
     :short        => "-c",
     :long         => "--no-clean",
-    :description  => "Disable restfully clean (jobs/deploy)",
+    :description  => "[auto] Disable restfully clean (jobs/deploy)",
     :boolean      => true
+
+  option :debug,
+    :short        => "-d",
+    :long         => "--debug",
+    :description  => "       Enable debuging outputs",
+    :boolean      => true
+
+  option :mode,
+    :short        => "-m MODE",
+    :long         => "--mode MODE (default: auto)",
+    :description  => "       [auto|educ] Educ = More educational please (Bypass submission and deployment, for Grid'5000 School 2012)\n\t\t\t\t\t\t\tAuto = I want my cloud now (Use API for submit and deploy nodes)",
+    :default      => "auto"
 
   option :help,
     :short        => "-h",
     :long         => "--help",
-    :description  => "Show this message",
+    :description  => "       Show this message",
     :on           => :tail,
     :boolean      => true,
     :show_options => true,
     :exit         => 0
 
+  option :input_nodes,
+    :short        => "-i NODES or STDIN",
+    :long         => "--input NODES or STDIN",
+    :description  => "[educ] Provide input node file (kavlan style) use it with educ mode"
+
+  option :job_name,
+    :short        => "-j JOB NAME",
+    :long         => "--name JOB NAME",
+    :description  => "[auto] The name of the job (default: openstackg5k)",
+    :default      => "openstackg5k"
+
+  option :key,
+    :short        => "-k KEY",
+    :long         => "--key KEY",
+    :description  => "[auto] Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
+    :default      => Openstackg5k::ssh_key
+
+  option :nodes,
+    :short        => "-n NUM Nodes",
+    :long         => "--nodes Num Nodes",
+    :description  => "[auto] Number of nodes (default: 2)",
+    :default      => 2
+
+  option :site,
+    :short        => "-s SITE",
+    :long         => "--site SITE",
+    :description  => "[auto] Site to launch job (default: #{%x[hostname -f].split('.')[1]})",
+    :default      => "#{%x[hostname -f].split('.')[1]}"
+
+  option :base_uri,
+    :short        => "-u URI",
+    :long         => "--uri URI",
+    :description  => "[auto] API Base URI (default: stable API)",
+    :default      => "https://api.grid5000.fr/stable/grid5000"
+
+  option :volumes,
+    :short        => "-v",
+    :long         => "--volumes",
+    :description  => "       Enable Nova Volumes feature (ISCSI) (ubuntu-x64-br@sbadia/ubuntu-x64-1204-custom@sbadia)",
+    :boolean      => true
+
   option :version,
     :short        => "-V",
     :long         => "--version",
-    :description  => "Show Openstackg5k version",
+    :description  => "       Show Openstackg5k version",
     :boolean      => true,
     :proc         => lambda {|v| puts Openstackg5k::VERSION},
     :exit         => 0
 
+  option :walltime,
+    :short        => "-w WALLTIME",
+    :long         => "--walltime WALLTIME",
+    :description  => "[auto] Walltime of the job (default: 1) hours",
+    :default      => "01:00:00"
 
   def runos
     parse_options
     $log = Logger.new(STDOUT)
-    #$log.level = Logger::config[:log_level].to_s.upcase
-    $log.level = Logger::INFO
+    if config[:debug]
+      $log.level = Logger::DEBUG
+    else
+      $log.level = Logger::INFO
+    end
     $jobs = []
     $deploy = []
 
@@ -125,12 +140,89 @@ class Openstack
       Signal.trap(sig){
         if ! config[:no_clean].nil?
           Openstackg5k::clean!
-          exit 1
         end
+        exit 1
       }
     end
-    launch_os
+    case config[:mode]
+    when 'educ'
+      educational
+    when 'auto'
+      launch_os
+    else
+      $log.error "Unknow mode, authorized modes: auto or educ"
+      exit 2
+    end
   end # def:: runos
+
+  def execute(good)
+    nodes = good.dup
+    Puppetg5k::clush_nodes(good)
+    Puppetg5k::generate_site(good)
+    Puppetg5k::autosign_puppet(good)
+    ctrl = nodes.shift
+    Net::SSH::Multi.start(:on_error => :warn) do |session|
+      good.each do |node|
+        session.use "root@#{node}"
+      end
+      session.group :compute do
+        nodes.each do |cmp|
+          session.use "root@#{cmp}"
+        end
+      end
+      session.group :cloud do
+        ctrl.each do |ctr|
+          session.use "root@#{ctr}"
+        end
+      end
+      # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
+      $log.info "(#{Openstackg5k::time_elapsed}s) Install the prerequisite packages..."
+      Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail lvm2 -y --force-yes", args = {:showout => false})
+      session.loop
+      if ! config[:volumes].nil?
+        $log.info "(#{Openstackg5k::time_elapsed}s) Configure nova-volumes (create pv and vg)..."
+        Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate nova-volumes /dev/sda2",args = {:showout => false})
+        session.loop
+      end
+      good.each do |nod|
+        $log.info "(#{Openstackg5k::time_elapsed}s) Upload puppet modules on #{nod}..."
+        system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
+      end
+      $log.info "Install OpenStack using puppet..."
+      Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
+      session.loop
+      $log.info "(#{Openstackg5k::time_elapsed}s) Finish install..."
+      Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
+      session.loop
+      Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_compute.sh",args = { :group => :compute, :critical => false, :showout => false})
+      $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
+    end # Net::SSH::Multi
+  end # def:: execute
+
+  def educational
+    if config[:input_nodes] != nil
+      if File.file?(config[:input_nodes])
+        input = IO::readlines(config[:input_nodes]).map { |l| l.chomp }
+        input.each do |node|
+          if !(node =~ /-kavlan-/ )
+            $log.error "Nodes passed are not KaVLAN fqdn, please check (#{node})..."
+            exit 2
+          end
+        end
+        if input.count <= 1
+          $log.error "Please provide more than #{input.count} node... (min: 2)"
+          exit 2
+        end
+      else
+        $log.error "File #{config[:input_nodes]} doesn't exist or not readable..."
+      end
+      # Launch openstak deployment
+      execute(input)
+    else
+      $log.error "No nodes provided (OpenStack install aborded)..."
+      exit 2
+    end
+  end # def:: educational
 
   def launch_os
     begin
@@ -199,46 +291,10 @@ class Openstack
           deployment['nodes'].each do |conv|
             good << "#{conv.split('.')[0]}-kavlan-#{$vlan.to_s}.#{config[:site]}.grid5000.fr"
           end
-          nodes = good.dup
-          Puppetg5k::clush_nodes(good)
-          Puppetg5k::generate_site(good)
-          Puppetg5k::autosign_puppet(good)
-          ctrl = nodes.shift
-          Net::SSH::Multi.start(:on_error => :warn) do |session|
-            good.each do |node|
-              session.use "root@#{node}"
-            end
-            session.group :compute do
-              nodes.each do |cmp|
-                session.use "root@#{cmp}"
-              end
-            end
-            session.group :cloud do
-              ctrl.each do |ctr|
-                session.use "root@#{ctr}"
-              end
-            end
-            # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
-            rsession.logger.info "(#{time_elapsed}s) Install the prerequisite packages..."
-            Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail lvm2 -y --force-yes", args = {:showout => false})
-            session.loop
-            if ! config[:volumes].nil?
-              Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate nova-volumes /dev/sda2",args = {:showout => false})
-              session.loop
-            end
-            good.each do |nod|
-              rsession.logger.info "(#{time_elapsed}s) Upload puppet modules on #{nod}..."
-              system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
-            end
-            rsession.logger.info "Install OpenStack using puppet..."
-            Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
-            session.loop
-            rsession.logger.info "(#{time_elapsed}s) Finish install..."
-            Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
-            session.loop
-            Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_compute.sh",args = { :group => :compute, :critical => false, :showout => false})
-            rsession.logger.info "(#{time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
-          end # Net::SSH::Multi
+
+          # Install openstack on 'good' nodes
+          execute(good)
+
         end # $deploy.each
       end # Restfully::Session
     rescue => e
