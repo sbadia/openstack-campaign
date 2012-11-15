@@ -46,77 +46,75 @@ class Openstack
   option :no_clean,
     :short        => "-c",
     :long         => "--no-clean",
-    :description  => "Disable restfully clean (jobs/deploy)",
+    :description  => "[B] Disable restfully clean (jobs/deploy)",
     :boolean      => true
 
   option :debug,
     :short        => "-d",
     :long         => "--debug",
-    :description  => "Enable debuging outputs",
-    :boolean      => true,
-    :proc         => nil
+    :description  => "[B] Enable debuging outputs",
+    :boolean      => true
 
   option :educational,
     :short        => "-e",
     :long         => "--more-educational-please",
-    :description  => "Bypass submission and deployment (for Grid'5000 School 2012)",
+    :description  => "[B] Bypass submission and deployment (for Grid'5000 School 2012)",
     :boolean      => true
 
   option :help,
     :short        => "-h",
     :long         => "--help",
-    :description  => "Show this message",
+    :description  => "[B] Show this message",
     :on           => :tail,
     :boolean      => true,
     :show_options => true,
     :exit         => 0
 
-  option :input,
-    :short        => "-i",
-    :long         => "--input",
-    :description  => "Provide input node file (kavlan style) use it with '-e' option is provided",
-    :default      => nil
+  option :input_nodes,
+    :short        => "-i NODES or STDIN",
+    :long         => "--input NODES or STDIN",
+    :description  => "[A] Provide input node file (kavlan style) use it with '-e' option if provided"
 
   option :job_name,
-    :short        => "-j JOB_NAME",
-    :long         => "--name JOB_NAME",
-    :description  => "The name of the job (default: openstackg5k)",
+    :short        => "-j JOB NAME",
+    :long         => "--name JOB NAME",
+    :description  => "[A] The name of the job (default: openstackg5k)",
     :default      => "openstackg5k"
 
   option :key,
     :short        => "-k KEY",
     :long         => "--key KEY",
-    :description  => "Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
+    :description  => "[A] Name of then SSH key for the deployment (default: #{Openstackg5k::ssh_key})",
     :default      => Openstackg5k::ssh_key
 
   option :nodes,
     :short        => "-n NUM Nodes",
     :long         => "--nodes Num Nodes",
-    :description  => "Number of nodes (default: 2)",
+    :description  => "[A] Number of nodes (default: 2)",
     :default      => 2
 
   option :site,
     :short        => "-s SITE",
     :long         => "--site SITE",
-    :description  => "Site to launch job (default: #{%x[hostname -f].split('.')[1]})",
+    :description  => "[A] Site to launch job (default: #{%x[hostname -f].split('.')[1]})",
     :default      => "#{%x[hostname -f].split('.')[1]}"
 
   option :base_uri,
     :short        => "-u URI",
     :long         => "--uri URI",
-    :description  => "API Base URI (default: stable API)",
+    :description  => "[A] API Base URI (default: stable API)",
     :default      => "https://api.grid5000.fr/stable/grid5000"
 
   option :volumes,
     :short        => "-v",
     :long         => "--volumes",
-    :description  => "Enable Nova Volumes feature (ISCSI) (ubuntu-x64-br@sbadia/ubuntu-x64-1204-custom@sbadia)",
+    :description  => "[B] Enable Nova Volumes feature (ISCSI) (ubuntu-x64-br@sbadia/ubuntu-x64-1204-custom@sbadia)",
     :boolean      => true
 
   option :version,
     :short        => "-V",
     :long         => "--version",
-    :description  => "Show Openstackg5k version",
+    :description  => "[B] Show Openstackg5k version",
     :boolean      => true,
     :proc         => lambda {|v| puts Openstackg5k::VERSION},
     :exit         => 0
@@ -124,7 +122,7 @@ class Openstack
   option :walltime,
     :short        => "-w WALLTIME",
     :long         => "--walltime WALLTIME",
-    :description  => "Walltime of the job (default: 1) hours",
+    :description  => "[A] Walltime of the job (default: 1) hours",
     :default      => "01:00:00"
 
   def runos
@@ -198,8 +196,8 @@ class Openstack
   end # def:: execute
 
   def educational
-    if config[:input] != nil
-      input = IO::readlines(config[:input]).map { |l| l.chomp }
+    if config[:input_nodes] != nil
+      input = IO::readlines(config[:input_nodes]).map { |l| l.chomp }
       input.each do |node|
         if !(node =~ /-kavlan-/ )
           $log.error "Nodes passed are not KaVLAN fqdn, please check (#{node})..."
