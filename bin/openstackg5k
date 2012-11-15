@@ -140,14 +140,18 @@ class Openstack
       Signal.trap(sig){
         if ! config[:no_clean].nil?
           Openstackg5k::clean!
-          exit 1
         end
+        exit 1
       }
     end
-    if config[:educational]
+    case config[:mode]
+    when 'educ'
       educational
-    else
+    when 'auto'
       launch_os
+    else
+      $log.error "Unknow mode, authorized modes: auto or educ"
+      exit 2
     end
   end # def:: runos
 
