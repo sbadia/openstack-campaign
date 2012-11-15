@@ -201,12 +201,20 @@ class Openstack
 
   def educational
     if config[:input_nodes] != nil
-      input = IO::readlines(config[:input_nodes]).map { |l| l.chomp }
-      input.each do |node|
-        if !(node =~ /-kavlan-/ )
-          $log.error "Nodes passed are not KaVLAN fqdn, please check (#{node})..."
+      if File.file?(config[:input_nodes])
+        input = IO::readlines(config[:input_nodes]).map { |l| l.chomp }
+        input.each do |node|
+          if !(node =~ /-kavlan-/ )
+            $log.error "Nodes passed are not KaVLAN fqdn, please check (#{node})..."
+            exit 2
+          end
+        end
+        if input.count <= 1
+          $log.error "Please provide more than #{input.count} node... (min: 2)"
           exit 2
         end
+      else
+        $log.error "File #{config[:input_nodes]} doesn't exist or not readable..."
       end
       # Launch openstak deployment
       execute(input)
