@@ -90,7 +90,7 @@ class Openstack
   option :nodes,
     :short        => "-n NUM Nodes",
     :long         => "--nodes Num Nodes",
-    :description  => "[auto] Number of nodes (default: 2)",
+    :description  => "[auto] Number of nodes (default: 2, min: 2)",
     :default      => 2
 
   option :site,
@@ -143,6 +143,10 @@ class Openstack
         end
         exit 1
       }
+    end
+    if config[:nodes].to_i <= 1
+      $log.error "Please provide more than #{config[:nodes].to_i} node... (min: 2)"
+      exit 1
     end
     case config[:mode]
     when 'educ'
