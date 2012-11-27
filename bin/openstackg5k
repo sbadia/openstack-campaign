@@ -199,7 +199,11 @@ class Openstack
       Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
       session.loop
       Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_compute.sh",args = { :group => :compute, :critical => false, :showout => false})
-      $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
+      if config[:mode] == 'auto'
+        $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
+      else
+        $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}')"
+      end
     end # Net::SSH::Multi
   end # def:: execute
 
