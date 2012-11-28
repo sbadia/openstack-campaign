@@ -21,7 +21,7 @@ fi
 
 # download
 echo "--> download $IMG image..."
-wget http://public.lille.grid5000.fr/~sbadia/$IMG.img
+wget http://apt.grid5000.fr/cloud/$IMG.img
 # import that image into glance
 echo "--> add downloaded image to glance..."
 glance add name="$NAME-amd64" is_public=true container_format=ovf disk_format=qcow2 < $IMG.img
