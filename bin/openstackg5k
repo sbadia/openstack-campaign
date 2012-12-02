@@ -238,10 +238,12 @@ class Openstack
         deploy_env = "ubuntu-x64-1204-custom@sbadia"
         timeout_dep = 1200
         wait_dep = 50
+        oar_types = ['deploy','destructive']
       else
         deploy_env = "ubuntu-x64-br@sbadia"
         timeout_dep = 900
         wait_dep = 30
+        oar_types = ['deploy']
       end
       Restfully::Session.new(:logger => $log, :cache => false, :base_uri => config[:base_uri]) do |root,rsession|
         site = root.sites[:"#{config[:site]}"]
@@ -250,7 +252,7 @@ class Openstack
           new_job = site.jobs.submit(
             :resources => "{type='kavlan'}/vlan=1+/nodes=#{config[:nodes]},walltime=#{config[:walltime]}",
             :command => "sleep #{(config[:walltime].to_i)*7200}",
-            :types => ["deploy"],
+            :types => oar_types,
             :name => config[:job_name]) rescue nil
           $jobs.push(new_job) unless new_job.nil?
         else
