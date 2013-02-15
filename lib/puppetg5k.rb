@@ -109,7 +109,7 @@ node '#{puppet}' {
     nova_user_password      => $nova_user_password,
     rabbit_password         => $rabbit_password,
     rabbit_user             => $rabbit_user,
-    export_resources        => false,
+    secret_key              => $secret_key,
   }
 
   class { 'openstack::auth_file':
@@ -136,6 +136,7 @@ node '#{clients.join('\',\'')}' {
     glance_api_servers => "${controller_node_internal}:9292",
     vncproxy_host      => $controller_node_public,
     vnc_enabled        => 'true',
+    nova_user_password => $nova_user_password,
     verbose            => $verbose,
     manage_volumes     => true,
     nova_volume        => 'nova-volumes'
