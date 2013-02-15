@@ -54,18 +54,24 @@ $private_interface = 'br100'
 # credentials
 $admin_email          = 'seb@sebian.fr'
 $admin_password       = 'keystone_admin'
+# Keystone
 $keystone_db_password = 'keystone_db_pass'
 $keystone_admin_token = 'keystone_admin_token'
+# Nova
 $nova_db_password     = 'nova_pass'
 $nova_user_password   = 'nova_pass'
+# Glance
 $glance_db_password   = 'glance_pass'
 $glance_user_password = 'glance_pass'
+# RabbitMQ
 $rabbit_password      = 'openstack_rabbit_password'
 $rabbit_user          = 'openstack_rabbit_user'
+# Quantum
 $fixed_network_range  = '10.0.0.0/20'
+# Horizon
+$secret_key           = 'QnXN1eEQsBC7w'
 # switch this to true to have all service log at verbose
 $verbose              = 'false'
-
 
 #### end shared variables #################
 
@@ -123,7 +129,6 @@ node '#{clients.join('\',\'')}' {
     libvirt_type       => 'kvm',
     fixed_range        => $fixed_network_range,
     network_manager    => 'nova.network.manager.FlatManager',
-    multi_host         => false,
     sql_connection     => $sql_connection,
     rabbit_host        => $controller_node_internal,
     rabbit_password    => $rabbit_password,
