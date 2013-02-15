@@ -52,3 +52,18 @@
 [submodule "modules/apt"]
 	path = modules/apt
 	url = https://github.com/puppetlabs/puppetlabs-apt
+[submodule "modules/cinder"]
+	path = modules/cinder
+	url = https://github.com/puppetlabs/puppetlabs-cinder
+[submodule "modules/quantum"]
+	path = modules/quantum
+	url = https://github.com/bodepd/openstack-quantum-puppet
+[submodule "modules/apache"]
+	path = modules/apache
+	url = https://github.com/puppetlabs/puppetlabs-apache
+[submodule "modules/vswitch"]
+	path = modules/vswitch
+	url = https://github.com/ekarlso/puppet-vswitch
+[submodule "modules/inifile"]
+	path = modules/inifile
+	url = https://github.com/cprice-puppet/puppetlabs-inifile
