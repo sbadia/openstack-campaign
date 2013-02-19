@@ -196,7 +196,7 @@ class Openstack
       $log.info "Install puppetmaster storeconfigs..."
       Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules/ -e \"class { 'puppet::master': }\"",args = { :group => :cloud, :critical => true, :showout => true})
       $log.info "Install OpenStack using puppet..."
-      Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
+      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s}",args = { :critical => true, :showout => true})
       session.loop
       $log.info "(#{Openstackg5k::time_elapsed}s) Finish install..."
       Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
