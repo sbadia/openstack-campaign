@@ -19,6 +19,16 @@ class puppet::client {
   #    line => 'server = $master';
   #}
 
-  File['/etc/puppet/puppet.conf'] { content  => template('puppet/client.conf.erb') }
+
+  file {
+    '/etc/puppet/pupppet.conf':
+      ensure  => file,
+      content => template('puppet/client.conf.erb'),
+      owner   => root,
+      group   => root,
+      mode    => '0644';
+  }
+
+
 
 } # Class:: puppet::client
