@@ -13,19 +13,19 @@ class puppet::master {
   require 'puppet'
 
   package {
-    ['puppetmaster','libmysql-ruby','build-essential','libmysqlclient-dev','libactiverecord-ruby']:
+    ['puppetmaster','libmysql-ruby','build-essential',
+    'libmysqlclient-dev','libactiverecord-ruby']:
       ensure    => installed;
-    'mysql':
-      ensure    => installed,
-      provider  => gem,
-      require   => [Package['libmysqlclient-dev'],File['/etc/gemrc']];
-    'activerecord':
-      ensure    => '3.0.11',
-      provider  => gem,
-      require   => File['/etc/gemrc'];
   }
 
-  File['/etc/puppet/puppet.conf'] { source  => 'puppet:///modules/puppet/master/puppet.conf' }
+  file {
+    '/etc/puppet/puppet.conf':
+      ensure  => file,
+      source  => 'puppet:///modules/puppet/master/puppet.conf',
+      owner   => root,
+      group   => root,
+      mode    => '0644';
+  }
 
   include 'mysql'
 
