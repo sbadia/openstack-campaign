@@ -181,7 +181,8 @@ class Openstack
       end
       # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
       $log.info "(#{Openstackg5k::time_elapsed}s) Install the prerequisite packages..."
-      Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail lvm2 -y --force-yes", args = {:showout => false})
+      Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake curl git multitail lvm2 -y --force-yes", args = {:showout => false})
+      Openstackg5k::nexec(session,"https_proxy=\"http://proxy:3128\" curl -s https://raw.github.com/sbadia/puppet-puppet/master/files/scripts/puppet_install.sh | sudo PROXYFIED=true sh", args = {:showout => true})
       session.loop
       if ! config[:volumes].nil?
         $log.info "(#{Openstackg5k::time_elapsed}s) Configure nova-volumes (create pv and vg)..."
@@ -192,8 +193,10 @@ class Openstack
         $log.info "(#{Openstackg5k::time_elapsed}s) Upload puppet modules on #{nod}..."
         system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
       end
+      $log.info "Install puppetmaster storeconfigs..."
+      Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules/ -e \"class { 'puppet::master': }\"",args = { :group => :cloud, :critical => true, :showout => true})
       $log.info "Install OpenStack using puppet..."
-      Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
+      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s}",args = { :critical => true, :showout => true})
       session.loop
       $log.info "(#{Openstackg5k::time_elapsed}s) Finish install..."
       Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
