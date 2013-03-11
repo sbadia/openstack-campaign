@@ -16,7 +16,7 @@ node '#{puppet}' {
 
 
 node '#{clients.join('\',\'')}' {
-    $master = '#{puppet}'
+    $masterg5k = '#{puppet}'
     include 'puppet::client'
 }
 EOF
