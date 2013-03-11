@@ -181,9 +181,13 @@ class Openstack
       end
       # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
       $log.info "(#{Openstackg5k::time_elapsed}s) Install the prerequisite packages..."
-      Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake curl git multitail lvm2 -y --force-yes", args = {:showout => false})
+      Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake curl git ntpdate htop multitail lvm2 -y --force-yes", args = {:showout => false})
+      $log.info "(#{Openstackg5k::time_elapsed}s) Syncronize clock with ntp...."
+      Openstackg5k::nexec(session,"ntpdate ntp", args = {:showout => false})
+      $log.info "(#{Openstackg5k::time_elapsed}s) Install puppet...."
       Openstackg5k::nexec(session,"https_proxy=\"http://proxy:3128\" curl -s https://raw.github.com/sbadia/puppet-puppet/master/files/scripts/puppet_install.sh | sudo PROXYFIED=true sh", args = {:showout => true})
       session.loop
+      # clush -l root -w $(nodeset -f $(kavlan -l)) 'date'
       if ! config[:volumes].nil?
         $log.info "(#{Openstackg5k::time_elapsed}s) Configure nova-volumes (create pv and vg)..."
         Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate nova-volumes /dev/sda2",args = {:showout => false})
