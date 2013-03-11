@@ -2,43 +2,34 @@
 # Manifest:: master.pp
 #
 # Author:: Sebastien Badia (<seb@sebian.fr>)
-# Date:: Thu May 31 18:36:30 +0200 2012
+# Date:: 2013-03-11 18:25:24 +0100
 # Maintainer:: Sebastien Badia (<seb@sebian.fr>)
 #
 
-# Class:: puppet::master
+# Class:: puppet::master inherits puppet
 #
 #
-class puppet::master {
-  require 'puppet'
-
-  package {
-    ['puppetmaster','libmysql-ruby','build-essential',
-    'libmysqlclient-dev','libactiverecord-ruby']:
-      ensure    => installed;
-  }
-
-  file {
-    '/etc/puppet/puppet.conf':
-      ensure  => file,
-      source  => 'puppet:///modules/puppet/master/puppet.conf',
-      owner   => root,
-      group   => root,
-      mode    => '0644';
-  }
-
+class puppet::master inherits puppet {
   include 'mysql'
 
-  class { 'mysql::server': }
+  package {
+    ['puppetmaster','libmysql-ruby','libactiverecord-ruby']:
+      ensure => installed;
+  }
+
+  File['/etc/puppet/puppet.conf'] { source  => 'puppet:///modules/puppet/master/puppet.conf' }
 
   mysql::db {
     'puppet':
+      ensure   => 'present',
+      charset  => 'utf8',
       user     => 'puppet',
-      password => 'puppet',
+      password => 'password',
       host     => 'localhost',
       grant    => ['all'],
+      # http://projects.puppetlabs.com/issues/17802
       require  => Class['mysql::config'],
-   }
+  }
 
   file {
     '/etc/puppet/manifests/install.pp':
@@ -67,4 +58,4 @@ class puppet::master {
       mode    => '0644',
       require => Package['puppetmaster'];
   }
-} # Class:: puppet::master
+} # Class:: puppet::master inherits puppet

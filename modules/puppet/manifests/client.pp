@@ -2,33 +2,17 @@
 # Manifest:: client.pp
 #
 # Author:: Sebastien Badia (<seb@sebian.fr>)
-# Date:: Thu May 31 18:36:30 +0200 2012
+# Date:: 2013-03-11 18:25:24 +0100
 # Maintainer:: Sebastien Badia (<seb@sebian.fr>)
 #
 
-# Class:: puppet::client
+# Class:: puppet::client inherits puppet
 #
 #
-class puppet::client {
-  require 'puppet'
+class puppet::client inherits puppet {
 
-  #include 'custom'
-  #line {
-  #  puppetmaster:
-  #    file => '/etc/puppet/puppet.conf',
-  #    line => 'server = $master';
-  #}
-
-
-  file {
-    '/etc/puppet/pupppet.conf':
-      ensure  => file,
-      content => template('puppet/client.conf.erb'),
-      owner   => root,
-      group   => root,
-      mode    => '0644';
+  File['/etc/puppet/puppet.conf'] {
+    content  => template('puppet/client.conf.erb')
   }
 
-
-
-} # Class:: puppet::client
+} # Class:: puppet::client inherits puppet::base

@@ -2,7 +2,7 @@
 # Manifest:: init.pp
 #
 # Author:: Sebastien Badia (<seb@sebian.fr>)
-# Date:: Thu May 31 18:36:30 +0200 2012
+# Date:: 2013-03-11 18:25:24 +0100
 # Maintainer:: Sebastien Badia (<seb@sebian.fr>)
 #
 
@@ -19,9 +19,14 @@ class puppet {
   }
 
   file {
-    '/etc/gemrc':
-      source  => 'puppet:///modules/puppet/repo/gemrc',
+    '/etc/puppet/puppet.conf':
       ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => '0644';
+    '/etc/gemrc':
+      ensure  => file,
+      source  => 'puppet:///modules/puppet/repo/gemrc',
       owner   => root,
       group   => root,
       mode    => '0644';
