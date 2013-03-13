@@ -58,14 +58,14 @@ class puppet::master inherits puppet {
       owner   => root,
       group   => root,
       mode    => '0644',
-      require => Package['puppetmaster'];
+      require => Package['puppetmaster-passenger'];
     '/etc/puppet/manifests/openstack.pp':
       ensure  => file,
       source  => 'puppet:///modules/puppet/master/openstack.pp',
       owner   => root,
       group   => root,
       mode    => '0644',
-      require => Package['puppetmaster'];
+      require => Package['puppetmaster-passenger'];
     '/etc/puppet/manifests/site.pp':
       ensure  => link,
       target  => '/etc/puppet/manifests/openstack.pp',
@@ -76,6 +76,6 @@ class puppet::master inherits puppet {
       owner   => root,
       group   => root,
       mode    => '0644',
-      require => Package['puppetmaster'];
+      require => Package['puppetmaster-passenger'];
   }
 } # Class:: puppet::master inherits puppet
