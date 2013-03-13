@@ -10,10 +10,30 @@
 #
 #
 class puppet::master inherits puppet {
+
   include 'mysql'
 
+  file {
+    '/etc/apache2/sites-available/puppetmaster':
+      ensure  => file,
+      source  => 'puppet:///modules/puppet/master/puppetmaster',
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      notify  => Service['apache2'],
+      require => Package['puppetmaster-passenger'];
+  }
+
+  service {
+    'apache2':
+      ensure     => running,
+      hasrestart => true,
+      hasstatus  => true,
+      require    => Package['puppetmaster-passenger'];
+  }
+
   package {
-    ['puppetmaster','libmysql-ruby','libactiverecord-ruby']:
+    ['puppetmaster-passenger','libmysql-ruby','libactiverecord-ruby']:
       ensure => installed;
   }
 
