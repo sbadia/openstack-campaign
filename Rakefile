@@ -1,9 +1,9 @@
 # Author:: Sebastien Badia (<seb@sebian.fr>)
 # Date:: Mon Jun 04 23:11:30 +0200 2012
 require 'rubygems'
-require 'rake/gempackagetask'
-require 'rake/rdoctask'
+require 'rubygems/package_task'
 require 'lib/openstackg5k'
+require 'rdoc/task'
 require 'yaml'
 
 GEM = 'openstackg5k'
@@ -34,7 +34,7 @@ gemspec = Gem::Specification.new do |s|
   s.files           = %w( README.md ) + Dir.glob("lib/*")
 end
 
-Rake::GemPackageTask.new(gemspec) do |pkg|
+Gem::PackageTask.new(gemspec) do |pkg|
   pkg.gem_spec = gemspec
 end
 
@@ -45,8 +45,7 @@ task :gemspec do
   end
 end
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
+RDoc::Task.new do |rdoc|
   version = File.exist?('GEM_VERSION') ? File.read('GEM_VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
