@@ -16,7 +16,7 @@ class puppet::master inherits puppet {
   file {
     '/etc/apache2/sites-available/puppetmaster':
       ensure  => file,
-      source  => 'puppet:///modules/puppet/master/puppetmaster',
+      content => template('modules/puppet/puppetmaster.erb'),
       owner   => root,
       group   => root,
       mode    => '0644',
