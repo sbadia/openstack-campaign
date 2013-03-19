@@ -45,9 +45,9 @@ nova show ${NAME}_vm
 sleep 20
 #nova add-floating-ip precise_vm $floating_ip
 sleep 10
-IP=`nova show cirros_vm |grep novanetwork|awk '{print $5}'`
+IP=`nova show ${NAME}_vm |grep novanetwork|awk '{print $5}'`
 echo "--> It's ok, you can sshing by run this command..."
-echo "ssh cirros@${IP} -i /tmp/id_rsa"
+echo "ssh ${NAME}@${IP} -i /tmp/id_rsa"
 echo -en "\nFor dashboard (from your laptop):\nssh -L 8888:`hostname -s`:80 `hostname -d | cut -d '.' -f 1`.g5k\nand go to http://localhost:8888\n"
 #ssh cirros@${IP} -i /tmp/id_rsa
 #nova show cirros_vm
