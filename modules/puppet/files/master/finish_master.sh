@@ -7,3 +7,5 @@ mysql -D nova -e "update networks set bridge_interface='$net_dev' where bridge_i
 echo -en "--flat_interface=$net_dev\n--flat_injected=True\n" >> /etc/nova/nova.conf
 sed -e 's/FlatManager/FlatDHCPManager/' -i /etc/nova/nova.conf
 /etc/init.d/nova-network restart
+# https://answers.launchpad.net/nova/+question/152528
+ip link set dev br100 promisc on
