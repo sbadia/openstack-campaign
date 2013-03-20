@@ -240,7 +240,7 @@ class Openstack
         wait_dep = 50
         oar_types = ['deploy','destructive']
       else
-        deploy_env = "ubuntu-x64-br@sbadia"
+        deploy_env = "ubuntu-x64-1204@sbadia"
         timeout_dep = 900
         wait_dep = 30
         oar_types = ['deploy']
