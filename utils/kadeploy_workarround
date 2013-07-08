@@ -1,0 +1,1 @@
+kadeploy3 -f $OAR_NODEFILE -e ubuntu-x64-1204-custom -u sbadia --vlan `kavlan -V` -k --force-steps "SetDeploymentEnv|SetDeploymentEnvUntrusted:2:1250&BroadcastEnv|BroadcastEnvKastafior:1:900&BootNewEnv|BootNewEnvKexec:1:400"
