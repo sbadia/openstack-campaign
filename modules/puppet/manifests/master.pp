@@ -39,6 +39,8 @@ class puppet::master inherits puppet {
 
   File['/etc/puppet/puppet.conf'] { source  => 'puppet:///modules/puppet/master/puppet.conf' }
 
+  class { 'mysql::server': }
+
   mysql::db {
     'puppet':
       ensure   => 'present',
