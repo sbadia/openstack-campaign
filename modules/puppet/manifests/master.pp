@@ -13,33 +13,16 @@ class puppet::master inherits puppet {
 
   include 'mysql'
 
-  file {
-    '/etc/apache2/sites-available/puppetmaster':
-      ensure  => file,
-      content => template('puppet/puppetmaster.erb'),
-      owner   => root,
-      group   => root,
-      mode    => '0644',
-      notify  => Service['apache2'],
-      require => Package['puppetmaster-passenger'];
-  }
-
-  service {
-    'apache2':
-      ensure     => running,
-      hasrestart => true,
-      hasstatus  => true,
-      require    => Package['puppetmaster-passenger'];
-  }
-
   package {
-    ['puppetmaster-passenger','libmysql-ruby','libactiverecord-ruby']:
+    ['puppetmaster','libmysql-ruby','libactiverecord-ruby']:
       ensure => installed;
   }
 
   File['/etc/puppet/puppet.conf'] { source  => 'puppet:///modules/puppet/master/puppet.conf' }
 
-  class { 'mysql::server': }
+  class { 'mysql::server':
+    config_hash => { root_password => 'password',bind_address => '0.0.0.0' },
+  }
 
   mysql::db {
     'puppet':
@@ -60,14 +43,14 @@ class puppet::master inherits puppet {
       owner   => root,
       group   => root,
       mode    => '0644',
-      require => Package['puppetmaster-passenger'];
+      require => Package['puppetmaster'];
     '/etc/puppet/manifests/openstack.pp':
       ensure  => file,
       source  => 'puppet:///modules/puppet/master/openstack.pp',
       owner   => root,
       group   => root,
       mode    => '0644',
-      require => Package['puppetmaster-passenger'];
+      require => Package['puppetmaster'];
     '/etc/puppet/manifests/site.pp':
       ensure  => link,
       target  => '/etc/puppet/manifests/openstack.pp',
@@ -78,6 +61,6 @@ class puppet::master inherits puppet {
       owner   => root,
       group   => root,
       mode    => '0644',
-      require => Package['puppetmaster-passenger'];
+      require => Package['puppetmaster'];
   }
 } # Class:: puppet::master inherits puppet
