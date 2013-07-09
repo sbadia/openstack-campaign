@@ -30,7 +30,36 @@ Work in progress
     cd openstack-campaign; git checkout folsom
     ```
     ```
-    http_proxy=http://proxy:3128 puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules```
+    http_proxy=http://proxy:3128 puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
+    ```
+
+    ```
+    [20:10] G5K ❯ ~ » http_proxy=http://proxy:3128 puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
+    Preparing to install into /home/sbadia/openstack-campaign/modules ...
+    Downloading from http://forge.puppetlabs.com ...
+    Installing -- do not interrupt ...
+    /home/sbadia/openstack-campaign/modules
+    └─┬ puppetlabs-openstack (v2.0.0)
+      ├─┬ puppetlabs-cinder (v2.0.0)
+      │ ├── cprice404-inifile (v0.10.3)
+      │ ├── dprince-qpid (v1.0.1)
+      │ ├── puppetlabs-mysql (v0.8.1)
+      │ ├─┬ puppetlabs-rabbitmq (v2.1.0)
+      │ │ └── puppetlabs-apt (v1.2.0)
+      │ └── puppetlabs-stdlib (v4.1.0)
+      ├── puppetlabs-glance (v2.0.0)
+      ├─┬ puppetlabs-horizon (v2.0.0)
+      │ ├─┬ puppetlabs-apache (v0.6.0)
+      │ │ └── puppetlabs-firewall (v0.3.1)
+      │ └── saz-memcached (v2.1.0)
+      ├── puppetlabs-keystone (v2.0.0)
+      ├─┬ puppetlabs-nova (v2.0.0)
+      │ └── duritong-sysctl (v0.0.1)
+      └─┬ puppetlabs-swift (v2.0.0)
+        ├── puppetlabs-rsync (v0.1.0)
+        ├── puppetlabs-xinetd (v1.1.0)
+        ├── ripienaar-concat (v0.2.0)
+        └── saz-ssh (v1.2.0)
     ```
 
 * Launch xp
@@ -38,7 +67,6 @@ Work in progress
     ```
     ruby bin/openstack -m educ -i ~/kavlan_nodes
     ```
-
 
 * Enjoy :-)
 
@@ -53,8 +81,6 @@ Work in progress
     nova-compute     graphene-75-kavlan-4.nancy.grid5000.fr nova             enabled :-)   2013-07-09 17:43:34
     nova-compute     graphene-76-kavlan-4.nancy.grid5000.fr nova             enabled :-)   2013-07-09 17:43:31
     ```
-
-
 # Contact
 
 * Sebastien Badia (mail/xmpp : seb _AT_ sebian _DOT_ fr )
