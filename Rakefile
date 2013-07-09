@@ -92,33 +92,6 @@ namespace :version do
   end
 end
 
-namespace :modules do
-  desc 'clone all required modules'
-  task :clone do
-    repo_hash = YAML.load_file(File.join(File.dirname(__FILE__), 'repo.yml'))
-    repos = (repo_hash['repos'] || {})
-    repos_to_clone = (repos['repo_paths'] || {})
-    repos_to_clone.each do |remote, local|
-      outpath = File.join('./modules', local)
-      `git clone #{remote} #{outpath}`
-    end
-  end
-  desc 'clean all puppetlabs modules'
-  task :clean do
-    repo_hash = YAML.load_file(File.join(File.dirname(__FILE__), 'repo.yml'))
-    repos = (repo_hash['repos'] || {})
-    repos_to_clone = (repos['repo_paths'] || {})
-    repos_to_clone.each do |remote, local|
-      outpath = File.join('./modules', local)
-      `rm -rf #{outpath}`
-    end
-  end
-  desc 'update submodules'
-  task :subup do
-    `git submodule foreach git pull origin master`
-  end
-end
-
 def bump_version(level)
   version_txt = GEM_VERSION
   if version_txt =~ /(\d+)\.(\d+)\.(\d+)/
