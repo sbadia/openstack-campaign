@@ -59,7 +59,7 @@ node '#{puppet}' {
     fixed_range             => $fixed_network_range,
     mysql_root_password     => 'password',
     multi_host              => false,
-    network_manager         => 'nova.network.manager.FlatManager',
+    network_manager         => 'nova.network.manager.FlatDHCPManager',
     admin_email             => $admin_email,
     admin_password          => $password,
     keystone_admin_token    => $keystone_admin_token,
@@ -77,7 +77,7 @@ node '#{puppet}' {
   }
 
   class { 'openstack::auth_file':
-    admin_password       => $admin_password,
+    admin_password       => $password,
     keystone_admin_token => $keystone_admin_token,
     controller_node      => $controller_node_internal,
   }
