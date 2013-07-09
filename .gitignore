@@ -1,6 +1,11 @@
+# bases files
 pkg
 rdoc
 tmp
+
+# puppet openstack modules
+modules/*
+!modules/puppet
 
 # YARD artifacts
 .yardoc
