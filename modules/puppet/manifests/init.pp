@@ -14,7 +14,7 @@ import 'client.pp'
 #
 class puppet {
   package {
-    ['rake','git','multitail','ruby']:
+    ['rake','git','multitail','ruby','htop','strace','dstat']:
       ensure => installed;
   }
 
@@ -32,13 +32,25 @@ class puppet {
       mode    => '0644';
   }
 
-  sysctl::value {
-    'net.ipv6.conf.all.disable_ipv6':
-      value => '1';
-    'net.ipv6.conf.default.disable_ipv6':
-      value => '1';
-    'net.ipv6.conf.lo.disable_ipv6':
-      value => '1';
+  # OpenStack Grizzly pre
+  package {
+    ['ubuntu-cloud-keyring','python-software-properties',
+      'software-properties-common','python-keyring']:
+      ensure => installed;
   }
 
+  file {
+    '/etc/apt/sources.list.d/grizzly.list':
+      ensure  => file,
+      owner   => root,
+      group   => root,
+      mode    => '0644',
+      content => 'deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main';
+  }
+
+  # Remove Grid'5000 settings
+  file {
+    '/etc/ldap/ldap.conf':
+      ensure => absent;
+  }
 } # Class:: puppet
