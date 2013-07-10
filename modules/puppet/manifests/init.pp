@@ -18,6 +18,16 @@ class puppet {
       ensure => installed;
   }
 
+  exec {
+    'apt-get update':
+      command       => '/usr/bin/apt-get update',
+      refreshonly   =>  true,
+      user          => root,
+      logoutput     => 'on_failure',
+      onlyif        => 'test -x /usr/bin/apt-get',
+      path          => '/bin:/usr/bin';
+  }
+
   file {
     '/etc/puppet/puppet.conf':
       ensure  => file,
@@ -45,6 +55,7 @@ class puppet {
       owner   => root,
       group   => root,
       mode    => '0644',
+      notify  => Exec['apt-get update'],
       content => 'deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main';
   }
 
