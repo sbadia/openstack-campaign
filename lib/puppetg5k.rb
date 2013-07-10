@@ -1,5 +1,6 @@
 # Author:: Sebastien Badia (<seb@sebian.fr>)
 # Date:: Thu Jun 07 19:12:44 +0200 2012
+# vi: set ft=ruby :
 #
 module Puppetg5k
   def generate_site(nodesite)
