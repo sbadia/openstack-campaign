@@ -64,4 +64,12 @@ class puppet {
     '/etc/ldap/ldap.conf':
       ensure => absent;
   }
+
+  host {
+    $::fqdn:
+      ensure        => present,
+      ip            => $::ipaddress_br100,
+      host_aliases  => $::hostname,
+      comment       => 'Needed by openstack';
+  }
 } # Class:: puppet
