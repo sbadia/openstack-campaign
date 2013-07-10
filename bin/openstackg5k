@@ -208,9 +208,8 @@ class Openstack
       Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s}",args = { :critical => true, :showout => true})
       session.loop
       $log.info "(#{Openstackg5k::time_elapsed}s) Finish install..."
-      Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
+      Openstackg5k::nexec(session,"ip link set dev br100 promisc on",args = { :critical => false, :showout => false})
       session.loop
-      Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_compute.sh",args = { :group => :compute, :critical => false, :showout => false})
       if config[:mode] == 'auto'
         $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
       else
