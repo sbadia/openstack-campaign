@@ -204,11 +204,12 @@ class Openstack
       $log.info "Install grizzly pre-requists on computes nodes..."
       Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules/ -e \"class { 'puppet::client': }\"",args = { :group => :compute, :critical => true, :showout => true})
       session.loop
+      # FIXME a strange bug ? with puppet 2.7.12, --detailed-exitcodes seems to be activated by default... (return 2 if changes)
       $log.info "Install OpenStack using puppet... (cloud ctrl)"
-      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s}",args = { :group => :cloud, :critical => true, :showout => true})
+      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s};echo $?",args = { :group => :cloud, :critical => true, :showout => true})
       session.loop
       $log.info "Install OpenStack using puppet... (computes nodes)"
-      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s}",args = { :group => :compute, :critical => true, :showout => true})
+      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s};echo $?",args = { :group => :compute, :critical => true, :showout => true})
       session.loop
       $log.info "(#{Openstackg5k::time_elapsed}s) Finish install..."
       Openstackg5k::nexec(session,"ip link set dev br100 promisc on",args = { :critical => false, :showout => false})
