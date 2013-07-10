@@ -30,7 +30,8 @@ Work in progress
     cd openstack-campaign; git checkout folsom
     ```
     ```
-    http_proxy=http://proxy:3128 puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
+    gem install --no-ri --no-rdoc puppet -v 2.7.14 --user-install
+    http_proxy=https://proxy:3128 $HOME/.gem/ruby/1.8/bin/puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
     ```
 
     ```
@@ -71,15 +72,19 @@ Work in progress
 * Enjoy :-)
 
     ```
-    root@graphene-25-kavlan-4:~# nova-manage service list
-    Binary           Host                                   Zone             Status  State Updated_At
-    nova-consoleauth graphene-25-kavlan-4.nancy.grid5000.fr internal         enabled :-)   2013-07-09 17:43:33
-    nova-scheduler   graphene-25-kavlan-4.nancy.grid5000.fr internal         enabled :-)   2013-07-09 17:43:33
-    nova-conductor   graphene-25-kavlan-4.nancy.grid5000.fr internal         enabled :-)   2013-07-09 17:43:33
-    nova-network     graphene-25-kavlan-4.nancy.grid5000.fr internal         enabled :-)   2013-07-09 17:43:37
-    nova-cert        graphene-25-kavlan-4.nancy.grid5000.fr internal         enabled :-)   2013-07-09 17:43:32
-    nova-compute     graphene-75-kavlan-4.nancy.grid5000.fr nova             enabled :-)   2013-07-09 17:43:34
-    nova-compute     graphene-76-kavlan-4.nancy.grid5000.fr nova             enabled :-)   2013-07-09 17:43:31
+
+    root@talc-11-kavlan-4:~# nova-manage service list
+    Binary           Host                                 Zone             Status     State Updated_At
+    nova-consoleauth talc-11-kavlan-4.nancy.grid5000.fr   internal         enabled    :-)   2013-07-10 19:18:32
+    nova-scheduler   talc-11-kavlan-4.nancy.grid5000.fr   internal         enabled    :-)   2013-07-10 19:18:32
+    nova-conductor   talc-11-kavlan-4.nancy.grid5000.fr   internal         enabled    :-)   2013-07-10 19:18:32
+    nova-network     talc-11-kavlan-4.nancy.grid5000.fr   internal         enabled    :-)   2013-07-10 19:18:36
+    nova-cert        talc-11-kavlan-4.nancy.grid5000.fr   internal         enabled    :-)   2013-07-10 19:18:32
+    nova-compute     talc-33-kavlan-4.nancy.grid5000.fr   nova             enabled    :-)   2013-07-10 19:18:35
+    nova-compute     talc-77-kavlan-4.nancy.grid5000.fr   nova             enabled    :-)   2013-07-10 19:18:29
+    nova-compute     talc-90-kavlan-4.nancy.grid5000.fr   nova             enabled    :-)   2013-07-10 19:18:27
+    nova-compute     talc-76-kavlan-4.nancy.grid5000.fr   nova             enabled    :-)   2013-07-10 19:18:32
+    nova-compute     talc-71-kavlan-4.nancy.grid5000.fr   nova             enabled    :-)   2013-07-10 19:18:27
     ```
 # Contact
 
