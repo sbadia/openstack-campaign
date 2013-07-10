@@ -19,7 +19,7 @@ Work in progress
     kadeploy3 -f $OAR_NODEFILE -e ubuntu-x64-1204 -k --vlan `kavlan -V`
     ```
     ```
-    kavlan -l > ~/kavlan_nodes```
+    kavlan -l > ~/kavlan_nodes
     ```
 
 * Download lastest openstack-campaign from git, switch to folsom branch (yes folsom for grizzly, i'm not drunk ;-)), fetch puppet modules (from puppet forge)
@@ -65,7 +65,7 @@ Work in progress
 * Launch xp
 
     ```
-    ruby bin/openstack -m educ -i ~/kavlan_nodes
+    ruby bin/openstackg5k -m educ -i ~/kavlan_nodes
     ```
 
 * Enjoy :-)
