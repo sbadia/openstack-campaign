@@ -191,8 +191,8 @@ class Openstack
       session.loop
       # clush -l root -w $(nodeset -f $(kavlan -l)) 'date'
       if ! config[:volumes].nil?
-        $log.info "(#{Openstackg5k::time_elapsed}s) Configure nova-volumes (create pv and vg)..."
-        Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate nova-volumes /dev/sda2",args = {:showout => false})
+        $log.info "(#{Openstackg5k::time_elapsed}s) Configure cinder-volumes (create pv and vg)..."
+        Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate cinder-volumes /dev/sda2",args = {:showout => false})
         session.loop
       end
       good.each do |nod|
