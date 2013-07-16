@@ -3,7 +3,7 @@ SetDeploymentEnvUntrusted:
   create_partition_table:
       substitute:
         - action: send
-          file: ./utils/custom_kadeploy/partitions
+          file: partitions
           destination: $KADEPLOY_TMP_DIR
           name: send_partitions
         - action: exec
@@ -23,7 +23,7 @@ SetDeploymentEnvKexec:
       post-ops:
         - action: run
           name: format_with_mkfs
-          file: ./utils/custom_kadeploy/format
+          file: format
   format_tmp_part:
       substitute:
         - action: exec
