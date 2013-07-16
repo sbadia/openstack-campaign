@@ -1,0 +1,36 @@
+---
+SetDeploymentEnvUntrusted:
+  create_partition_table:
+      substitute:
+        - action: send
+          file: partitions
+          destination: $KADEPLOY_TMP_DIR
+          name: send_partitions
+        - action: exec
+          name: partitioning_with_parted
+          command: parted -a optimal /dev/sda --script $(cat $KADEPLOY_TMP_DIR/partitions)
+SetDeploymentEnvKexec:
+  create_partition_table:
+      substitute:
+        - action: send
+          file: partitions
+          destination: $KADEPLOY_TMP_DIR
+          name: send_partitions
+        - action: exec
+          name: partitioning_with_parted
+          command: parted -a optimal /dev/sda --script $(cat $KADEPLOY_TMP_DIR/partitions)
+  format_deploy_part:
+      post-ops:
+        - action: run
+          name: format_with_mkfs
+          file: format
+  format_tmp_part:
+      substitute:
+        - action: exec
+          name: remove_format_tmp_part_step
+          command: /bin/true
+  format_swap_part:
+      substitute:
+        - action: exec
+          name: remove_format_swap_part_step
+          command: /bin/true

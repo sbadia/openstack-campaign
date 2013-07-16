@@ -1,0 +1,1 @@
+kadeploy3 -m graphene-106.nancy.grid5000.fr -e ubuntu-x64-1204-parted -k -d -V4 --set-custom-operations ./utils/custom_kadeploy/customparted.yml
