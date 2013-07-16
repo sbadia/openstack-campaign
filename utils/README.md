@@ -89,3 +89,13 @@ Work in progress
 # Contact
 
 * Sebastien Badia (mail/xmpp : seb _AT_ sebian _DOT_ fr )
+
+
+# FAQ
+
+* Q: I have this error
+
+      Something went wrong!
+      An unexpected error has occurred. Try refreshing the page. If that doesn't help,  contact your local administrator.
+
+* A: Don't panic, just drop your cookies for localhost:8888
