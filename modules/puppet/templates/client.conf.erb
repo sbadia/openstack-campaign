@@ -1,5 +1,4 @@
 # MANAGED BY PUPPET
-<% master = scope.lookupvar('master') -%>
 [main]
 logdir=/var/log/puppet
 vardir=/var/lib/puppet
@@ -7,6 +6,4 @@ ssldir=/var/lib/puppet/ssl
 rundir=/var/run/puppet
 factpath=$vardir/lib/facter
 templatedir=$confdir/templates
-prerun_command=/etc/puppet/etckeeper-commit-pre
-postrun_command=/etc/puppet/etckeeper-commit-post
-server = <%= master %>
+server = <%= scope.lookupvar('masterg5k') %>

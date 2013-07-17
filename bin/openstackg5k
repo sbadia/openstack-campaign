@@ -1,11 +1,13 @@
 #!/usr/bin/env ruby
+# vi: set ft=ruby :
 =begin
 
 Author:: Sebastien Badia (<seb@sebian.fr>)
 Date:: Mon Jun 04 23:22:33 +0200 2012
 
 OpenStackg5k is designed for deploy OpenStack cloud midleware on Grid'5000.
-For more information see <http://github.com/sbadia/openstack-campaign/>
+For more information see <http://github.com/sbadia/openstack-campaign/> or
+<https://www.grid5000.fr/mediawiki/index.php/OpenStack>
 Copyright © 2012  Sebastien Badia
 
 This program is free software: you can redistribute it and/or modify
@@ -58,7 +60,7 @@ class Openstack
   option :mode,
     :short        => "-m MODE",
     :long         => "--mode MODE (default: auto)",
-    :description  => "       [auto|educ] Educ = More educational please (Bypass submission and deployment, for Grid'5000 School 2012)\n\t\t\t\t\t\t\tAuto = I want my cloud now (Use API for submit and deploy nodes)",
+    :description  => "       [auto|educ] Educ = More educational please (Bypass submission and deployment, for Grid'5000 School)\n\t\t\t\t\t\t\tAuto = I want my cloud now (Use API for submit and deploy nodes)",
     :default      => "auto"
 
   option :help,
@@ -180,30 +182,40 @@ class Openstack
         end
       end
       # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
-      $log.info "(#{Openstackg5k::time_elapsed}s) Install the prerequisite packages..."
-      Openstackg5k::nexec(session,"rm -f /etc/ldap/ldap.conf;apt-get update;apt-get install rake puppet git multitail lvm2 -y --force-yes", args = {:showout => false})
+      $log.info "(#{Openstackg5k::time_elapsed}s) Install curl,ntpdate,lvm2 packages..."
+      Openstackg5k::nexec(session,"sed -e '/grid5000/d' -i /etc/apt/sources.list;apt-get update;apt-get install curl ntpdate lvm2 -y --force-yes", args = {:showout => false})
+      $log.info "(#{Openstackg5k::time_elapsed}s) Install puppet...."
+      Openstackg5k::nexec(session,"https_proxy=\"http://proxy:3128\" curl -s https://raw.github.com/sbadia/puppet-puppet/master/files/scripts/puppet_install.sh | sudo PUPPET_VERSION=3.2.2 PROXYFIED=true PREVENT_UPDATE=no sh", args = {:showout => true})
+      session.loop
+      $log.info "(#{Openstackg5k::time_elapsed}s) Syncronize clock with ntp...."
+      Openstackg5k::nexec(session,"ntpdate ntp", args = {:showout => false})
       session.loop
       if ! config[:volumes].nil?
-        $log.info "(#{Openstackg5k::time_elapsed}s) Configure nova-volumes (create pv and vg)..."
-        Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate nova-volumes /dev/sda2",args = {:showout => false})
+        $log.info "(#{Openstackg5k::time_elapsed}s) Configure cinder-volumes (create pv and vg)..."
+        Openstackg5k::nexec(session,"pvcreate /dev/sda2;vgcreate cinder-volumes /dev/sda2",args = {:showout => false})
         session.loop
       end
       good.each do |nod|
         $log.info "(#{Openstackg5k::time_elapsed}s) Upload puppet modules on #{nod}..."
         system("rsync --numeric-ids --archive --bwlimit=100000 --rsh ssh #{File.join('./',File.dirname(__FILE__),'..','modules')} root@#{nod}:/etc/puppet")
       end
-      $log.info "Install OpenStack using puppet..."
-      Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules /etc/puppet/modules/puppet/files/master/openstack.pp",args = { :critical => true, :showout => true})
+      $log.info "Install puppetmaster storeconfigs..."
+      Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules/ -e \"class { 'puppet::master': }\"",args = { :group => :cloud, :critical => true, :showout => true})
+      session.loop
+      $log.info "Install grizzly pre-requists on computes nodes..."
+      Openstackg5k::nexec(session,"puppet apply --modulepath /etc/puppet/modules/ -e \"class { 'puppet::client': }\"",args = { :group => :compute, :critical => true, :showout => true})
+      session.loop
+      # FIXME a strange bug ? with puppet 2.7.12, --detailed-exitcodes seems to be activated by default... (return 2 if changes)
+      $log.info "Install OpenStack using puppet... (cloud ctrl)"
+      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s};echo $?",args = { :group => :cloud, :critical => true, :showout => true})
+      session.loop
+      $log.info "Install OpenStack using puppet... (computes nodes)"
+      Openstackg5k::nexec(session,"puppet agent -t --server=#{ctrl.to_s};echo $?",args = { :group => :compute, :critical => true, :showout => true})
       session.loop
       $log.info "(#{Openstackg5k::time_elapsed}s) Finish install..."
-      Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_master.sh",args = { :group => :cloud, :critical => false, :showout => false})
+      Openstackg5k::nexec(session,"ip link set dev br100 promisc on",args = { :critical => false, :showout => false})
       session.loop
-      Openstackg5k::nexec(session,"bash /etc/puppet/modules/puppet/files/master/finish_compute.sh",args = { :group => :compute, :critical => false, :showout => false})
-      if config[:mode] == 'auto'
-        $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
-      else
-        $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}')"
-      end
+      $log.info "(#{Openstackg5k::time_elapsed/60}m) It's ok ! You can now connect to the cloud controller ('ssh root@#{ctrl.to_s}' and launch 'bash /tmp/nova.sh cirros')"
     end # Net::SSH::Multi
   end # def:: execute
 
@@ -235,7 +247,7 @@ class Openstack
   def launch_os
     begin
       if ! config[:volumes].nil?
-        deploy_env = "ubuntu-x64-1204-custom@sbadia"
+        deploy_env = "ubuntu-x64-1204-parted@sbadia"
         timeout_dep = 1200
         wait_dep = 50
         oar_types = ['deploy','destructive']
@@ -280,7 +292,13 @@ class Openstack
           next if job.reload['state'] != 'running'
           $vlan = Openstackg5k::get_vlan_property(job['uid'])
           rsession.logger.info "Deploy: env => #{deploy_env}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
-          new_deploy = job.parent.deployments.submit(:environment => deploy_env, :nodes => job['assigned_nodes'], :key => File.read(config[:key]), :vlan => $vlan.to_s) rescue nil
+          new_deploy = job.parent.deployments.submit(
+            :environment => deploy_env,
+            :nodes => job['assigned_nodes'],
+            :key => File.read(config[:key]),
+            :vlan => $vlan.to_s,
+            :disable_disk_partitioning => true
+          ) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?
         end
 

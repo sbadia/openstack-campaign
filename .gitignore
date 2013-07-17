@@ -1,6 +1,18 @@
+# bases files
 pkg
 rdoc
 tmp
+
+# puppet openstack modules
+modules/*
+!modules/puppet
+
+# Openstack campaign files
+modules/puppet/files/master/autosign.conf
+modules/puppet/files/master/install.pp
+modules/puppet/files/master/openstack.pp
+nodes
+kavlan_nodes
 
 # YARD artifacts
 .yardoc

@@ -1,0 +1,22 @@
+---
+name: ubuntu-x64-1204-parted
+version: 8
+description: Ubuntu Precise 12.04 (custom part. 6G swap, 35% lvm, rest ext3 /)
+author: sebastien.badia@inria.fr
+visibility: shared
+destructive: true
+os: linux
+image:
+  kind: tar
+  compression: gzip
+  file: http://public.nancy.grid5000.fr/~sbadia/envs/ubuntu/image/ubuntu-x64-precise.tgz
+postinstalls:
+- script: traitement.ash /rambin
+  archive: http://public.nancy.grid5000.fr/~sbadia/envs/ubuntu/prepost/ubuntu-prepost_0.1.1.tgz
+  compression: gzip
+boot:
+  kernel: /vmlinuz
+  initrd: /initrd.img
+multipart: false
+filesystem: ext3
+partition_type: 131

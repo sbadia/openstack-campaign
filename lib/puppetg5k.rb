@@ -1,5 +1,6 @@
 # Author:: Sebastien Badia (<seb@sebian.fr>)
 # Date:: Thu Jun 07 19:12:44 +0200 2012
+# vi: set ft=ruby :
 #
 module Puppetg5k
   def generate_site(nodesite)
@@ -16,7 +17,7 @@ node '#{puppet}' {
 
 
 node '#{clients.join('\',\'')}' {
-    $master = '#{puppet}'
+    $masterg5k = '#{puppet}'
     include 'puppet::client'
 }
 EOF
@@ -39,75 +40,45 @@ file {
     mode    => 0755;
 }
 ####### shared variables ##################
-
-
-# this section is used to specify global variables that will
-# be used in the deployment of multi and single node openstack
-# environments
-
-# assumes that eth0 is the public interface
-$public_interface  = 'br100'
-# assumes that eth1 is the interface that will be used for the vm network
-# this configuration assumes this interface is active but does not have an
-# ip address allocated to it.
-$private_interface = 'br100'
-# credentials
-$admin_email          = 'seb@sebian.fr'
-$admin_password       = 'keystone_admin'
-$keystone_db_password = 'keystone_db_pass'
-$keystone_admin_token = 'keystone_admin_token'
-$nova_db_password     = 'nova_pass'
-$nova_user_password   = 'nova_pass'
-$glance_db_password   = 'glance_pass'
-$glance_user_password = 'glance_pass'
-$rabbit_password      = 'openstack_rabbit_password'
-$rabbit_user          = 'openstack_rabbit_user'
-$fixed_network_range  = '10.0.0.0/20'
-# switch this to true to have all service log at verbose
-$verbose              = 'false'
-
-
-#### end shared variables #################
-
-# multi-node specific parameters
-
 $controller_node_public   = '#{puppet}'
 $controller_node_internal = '#{puppet}'
-$sql_connection         = "mysql://nova:${nova_db_password}@${controller_node_internal}/nova"
+$fixed_network_range      = '10.0.0.0/20'
+$admin_email              = 'seb@fooboozoo.fr'
+$password                 = 'changeme'
+$keystone_admin_token     = 'keystone_admin_token'
+$secret_key               = 'QnXN1eEQsBC7w'
+$db_pass                  = 'changeme'
+#### end shared variables #################
 
 node '#{puppet}' {
-
-#  class { 'nova::volume': enabled => true }
-#  class { 'nova::volume::iscsi': }
-
   class { 'openstack::controller':
     public_address          => $controller_node_public,
-    public_interface        => $public_interface,
-    private_interface       => $private_interface,
+    public_interface        => 'br100',
+    private_interface       => 'br100',
     internal_address        => $controller_node_internal,
     floating_range          => '10.16.60.0/24',
     fixed_range             => $fixed_network_range,
-    # by default it does not enable multi-host mode
+    mysql_root_password     => 'password',
     multi_host              => false,
-    # by default is assumes flat dhcp networking mode
-    network_manager         => 'nova.network.manager.FlatManager',
-    verbose                 => $verbose,
-    mysql_root_password     => $mysql_root_password,
+    network_manager         => 'nova.network.manager.FlatDHCPManager',
     admin_email             => $admin_email,
-    admin_password          => $admin_password,
-    keystone_db_password    => $keystone_db_password,
+    admin_password          => $password,
     keystone_admin_token    => $keystone_admin_token,
-    glance_db_password      => $glance_db_password,
-    glance_user_password    => $glance_user_password,
-    nova_db_password        => $nova_db_password,
-    nova_user_password      => $nova_user_password,
-    rabbit_password         => $rabbit_password,
+    keystone_db_password    => $password,
+    glance_db_password      => $password,
+    nova_db_password        => $password,
+    cinder_db_password      => $password,
+    quantum                 => false,
+    glance_user_password    => $password,
+    nova_user_password      => $password,
+    cinder_user_password    => $password,
+    rabbit_password         => $password,
     rabbit_user             => $rabbit_user,
-    export_resources        => false,
+    secret_key              => $secret_key,
   }
 
   class { 'openstack::auth_file':
-    admin_password       => $admin_password,
+    admin_password       => $password,
     keystone_admin_token => $keystone_admin_token,
     controller_node      => $controller_node_internal,
   }
@@ -118,22 +89,23 @@ node '#{puppet}' {
 node '#{clients.join('\',\'')}' {
 
   class { 'openstack::compute':
-    private_interface  => $private_interface,
-    internal_address   => $ipaddress,
-    libvirt_type       => 'kvm',
-    fixed_range        => $fixed_network_range,
-    network_manager    => 'nova.network.manager.FlatManager',
-    multi_host         => false,
-    sql_connection     => $sql_connection,
-    rabbit_host        => $controller_node_internal,
-    rabbit_password    => $rabbit_password,
-    rabbit_user        => $rabbit_user,
-    glance_api_servers => "${controller_node_internal}:9292",
-    vncproxy_host      => $controller_node_public,
-    vnc_enabled        => 'true',
-    verbose            => $verbose,
-    manage_volumes     => true,
-    nova_volume        => 'nova-volumes'
+    private_interface     => 'br100',
+    internal_address      => $ipaddress_br100,
+    libvirt_type          => 'kvm',
+    quantum               => false,
+    fixed_range           => $fixed_network_range,
+    network_manager       => 'nova.network.manager.FlatDHCPManager',
+    rabbit_host           => $controller_node_internal,
+    rabbit_password       => $password,
+    rabbit_user           => $rabbit_user,
+    cinder_db_password    => $password,
+    db_host               => $controller_node_internal,
+    glance_api_servers    => "${controller_node_internal}:9292",
+    vncproxy_host         => $controller_node_public,
+    vnc_enabled           => 'true',
+    nova_user_password    => $password,
+    nova_db_password      => $password,
+    manage_volumes        => true,
   }
 
 }

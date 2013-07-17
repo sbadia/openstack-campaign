@@ -1,128 +1,75 @@
 # Module:: puppet
 # Manifest:: init.pp
 #
-# Author:: Sebastien Badia (<sebastien.badia@inria.fr>)
-# Date:: Thu May 31 18:36:30 +0200 2012
-# Maintainer:: Sebastien Badia (<sebastien.badia@inria.fr>)
+# Author:: Sebastien Badia (<seb@sebian.fr>)
+# Date:: 2013-03-11 18:25:24 +0100
+# Maintainer:: Sebastien Badia (<seb@sebian.fr>)
 #
 
-# Class:: puppet::base
+import 'master.pp'
+import 'client.pp'
+
+# Class:: puppet
 #
 #
-class puppet::base {
+class puppet {
   package {
-    ["rake","git","multitail"]:
+    ['rake','git','multitail','ruby','htop','strace','dstat']:
       ensure => installed;
   }
 
-  package {
-    "puppet":
-      ensure => installed;
-  }
-
-  apt::source {
-    "puppetlabs":
-      location => "http://apt.puppetlabs.com/",
-      release => $lsbdistcodename,
-      repos => "main",
-      key => "4BD6EC30";
-  }
-
-  apt::key {
-    "puppetlabs":
-      key => "4BD6EC30",
-      key_source => "/root/puppet-gpg.asc",
-      require => File["/root/puppet-gpg.asc"];
+  exec {
+    'apt-get update':
+      command       => '/usr/bin/apt-get update',
+      refreshonly   =>  true,
+      user          => root,
+      logoutput     => 'on_failure',
+      onlyif        => 'test -x /usr/bin/apt-get',
+      path          => '/bin:/usr/bin';
   }
 
   file {
-    "/etc/puppet/puppet.conf":
+    '/etc/puppet/puppet.conf':
       ensure  => file,
       owner   => root,
       group   => root,
-      mode    => 644,
-      require => Package["puppet"];
-    "/root/puppet-gpg.asc":
-      source  => "puppet:///modules/puppet/repo/4BD6EC30.asc",
+      mode    => '0644';
+    '/etc/gemrc':
       ensure  => file,
+      source  => 'puppet:///modules/puppet/repo/gemrc',
       owner   => root,
       group   => root,
-      mode    => 644;
-    "/etc/gemrc":
-      source  => "puppet:///modules/puppet/repo/gemrc",
-      ensure  => file,
-      owner   => root,
-      group   => root,
-      mode    => 644;
+      mode    => '0644';
   }
-} # Class:: puppet::base
 
-# Class:: puppet::master inherits puppet::base
-#
-#
-class puppet::master inherits puppet::base {
+  # OpenStack Grizzly pre
   package {
-    ["puppetmaster","libmysql-ruby","build-essential","libmysqlclient-dev"]:
+    ['ubuntu-cloud-keyring','python-software-properties',
+      'software-properties-common','python-keyring']:
       ensure => installed;
-    "mysql":
-      ensure => installed,
-      provider => gem,
-      require => [Package["libmysqlclient-dev"],File["/etc/gemrc"]];
-    "activerecord":
-      ensure => "3.0.11",
-      provider => gem,
-      require => File["/etc/gemrc"];
   }
-
-  File["/etc/puppet/puppet.conf"] { source  => "puppet:///modules/puppet/master/puppet.conf" }
-
-  mysql::db {
-    "puppet":
-      user => 'puppet',
-      password => 'puppet',
-      host => 'localhost',
-      grant => ['all'];
-   }
 
   file {
-    "/etc/puppet/manifests/install.pp":
-      source  => "puppet:///modules/puppet/master/install.pp",
+    '/etc/apt/sources.list.d/grizzly.list':
       ensure  => file,
       owner   => root,
       group   => root,
-      mode    => 644,
-      require => Package["puppetmaster"];
-    "/etc/puppet/manifests/openstack.pp":
-      source  => "puppet:///modules/puppet/master/openstack.pp",
-      ensure  => file,
-      owner   => root,
-      group   => root,
-      mode    => 644,
-      require => Package["puppetmaster"];
-    "/etc/puppet/manifests/site.pp":
-      ensure  => link,
-      target  => "/etc/puppet/manifests/openstack.pp",
-      require => File["/etc/puppet/manifests/openstack.pp"];
-    "/etc/puppet/autosign.conf":
-      source  => "puppet:///modules/puppet/master/autosign.conf",
-      ensure  => file,
-      owner   => root,
-      group   => root,
-      mode    => 644,
-      require => Package["puppetmaster"];
+      mode    => '0644',
+      notify  => Exec['apt-get update'],
+      content => 'deb http://ubuntu-cloud.archive.canonical.com/ubuntu precise-updates/grizzly main';
   }
-} # Class:: puppet::master inherits puppet::base
 
-# Class:: puppet::client inherits puppet::base
-#
-#
-class puppet::client inherits puppet::base {
-  #include 'custom'
-  #line {
-  #  puppetmaster:
-  #    file => "/etc/puppet/puppet.conf",
-  #    line => "server = $master";
-  #}
+  # Remove Grid'5000 settings
+  file {
+    '/etc/ldap/ldap.conf':
+      ensure => absent;
+  }
 
-  File["/etc/puppet/puppet.conf"] { content  => template("puppet/client.conf.erb") }
-} # Class:: puppet::client inherits puppet::base
+  host {
+    $::fqdn:
+      ensure        => present,
+      ip            => $::ipaddress_br100,
+      host_aliases  => $::hostname,
+      comment       => 'Needed by openstack';
+  }
+} # Class:: puppet

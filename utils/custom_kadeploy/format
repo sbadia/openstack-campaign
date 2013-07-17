@@ -1,0 +1,4 @@
+#!/bin/sh
+set -e
+mkswap -f /dev/sda1
+mkfs -t ext3 -b 4096 -O sparse_super,filetype,resize_inode,dir_index -q /dev/sda3

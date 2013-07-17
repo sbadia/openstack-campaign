@@ -1,0 +1,8 @@
+mklabel msdos
+u GB mkpart primary linux-swap 0 6
+u GB mkpart primary 6 35%
+u GB mkpart primary ext3 35% 100%
+align-check optimal 1
+align-check optimal 2
+align-check optimal 3
+set 2 lvm on

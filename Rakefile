@@ -1,9 +1,9 @@
 # Author:: Sebastien Badia (<seb@sebian.fr>)
 # Date:: Mon Jun 04 23:11:30 +0200 2012
 require 'rubygems'
-require 'rake/gempackagetask'
-require 'rake/rdoctask'
+require 'rubygems/package_task'
 require 'lib/openstackg5k'
+require 'rdoc/task'
 require 'yaml'
 
 GEM = 'openstackg5k'
@@ -34,7 +34,7 @@ gemspec = Gem::Specification.new do |s|
   s.files           = %w( README.md ) + Dir.glob("lib/*")
 end
 
-Rake::GemPackageTask.new(gemspec) do |pkg|
+Gem::PackageTask.new(gemspec) do |pkg|
   pkg.gem_spec = gemspec
 end
 
@@ -45,8 +45,7 @@ task :gemspec do
   end
 end
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
+RDoc::Task.new do |rdoc|
   version = File.exist?('GEM_VERSION') ? File.read('GEM_VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
@@ -90,33 +89,6 @@ namespace :version do
     task :patch do
       bump_version(:patch)
     end
-  end
-end
-
-namespace :modules do
-  desc 'clone all required modules'
-  task :clone do
-    repo_hash = YAML.load_file(File.join(File.dirname(__FILE__), 'repo.yml'))
-    repos = (repo_hash['repos'] || {})
-    repos_to_clone = (repos['repo_paths'] || {})
-    repos_to_clone.each do |remote, local|
-      outpath = File.join('./modules', local)
-      `git clone #{remote} #{outpath}`
-    end
-  end
-  desc 'clean all puppetlabs modules'
-  task :clean do
-    repo_hash = YAML.load_file(File.join(File.dirname(__FILE__), 'repo.yml'))
-    repos = (repo_hash['repos'] || {})
-    repos_to_clone = (repos['repo_paths'] || {})
-    repos_to_clone.each do |remote, local|
-      outpath = File.join('./modules', local)
-      `rm -rf #{outpath}`
-    end
-  end
-  desc 'update submodules'
-  task :subup do
-    `git submodule foreach git pull origin master`
   end
 end
 
