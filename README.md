@@ -45,7 +45,7 @@ distributed computing and networking.
     ```
     ```
     gem install --no-ri --no-rdoc puppet -v 2.7.14 --user-install
-    http_proxy=https://proxy:3128 $HOME/.gem/ruby/1.8/bin/puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
+    http_proxy=http://proxy:3128 $HOME/.gem/ruby/1.8/bin/puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
     ```
 
     ```
