@@ -18,6 +18,13 @@ Work in progress
     ```
     kadeploy3 -f $OAR_NODEFILE -e ubuntu-x64-1204 -k --vlan `kavlan -V`
     ```
+
+or if you want use cinder volumes (snapshot,volumes,…)
+
+    ```
+    cd utils/custom_kadeploy;kadeploy3 -f $OAR_NODEFILE -e ubuntu-x64-1204-parted -k --set-custom-operations ./customparted.yml --vlan `kavlan -V`
+    ```
+
     ```
     kavlan -l > ~/kavlan_nodes
     ```
