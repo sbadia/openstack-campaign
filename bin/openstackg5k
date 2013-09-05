@@ -247,12 +247,12 @@ class Openstack
   def launch_os
     begin
       if ! config[:volumes].nil?
-        deploy_env = "ubuntu-x64-1204-parted@sbadia"
+        deploy_env = "ubuntu-x64-1204-parted@deploy"
         timeout_dep = 1200
         wait_dep = 50
         oar_types = ['deploy','destructive']
       else
-        deploy_env = "ubuntu-x64-1204@sbadia"
+        deploy_env = "ubuntu-x64-1204@deploy"
         timeout_dep = 900
         wait_dep = 30
         oar_types = ['deploy']
