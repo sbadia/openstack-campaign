@@ -60,36 +60,47 @@ distributed computing and networking.
     ```
     ```
     gem install --no-ri --no-rdoc puppet -v 2.7.14 --user-install
-    http_proxy=http://proxy:3128 $HOME/.gem/ruby/1.8/bin/puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
+    http_proxy=http://proxy:3128 $HOME/.gem/ruby/1.8/bin/puppet module install puppetlabs/openstack --version 2.1.0 --modulepath $(pwd)/modules
+    http_proxy=http://proxy:3128 $HOME/.gem/ruby/1.8/bin/puppet module upgrade puppetlabs/apache --version 0.6.0 --modulepath $(pwd)/modules
     ```
 
     ```
-    [20:10] G5K ❯ ~ » http_proxy=http://proxy:3128 puppet module install puppetlabs/openstack --version 2.0.0 --modulepath $(pwd)/modules
+    » http_proxy=http://proxy:3128 puppet module install puppetlabs/openstack --version 2.1.0 --modulepath $(pwd)/modules
     Preparing to install into /home/sbadia/openstack-campaign/modules ...
     Downloading from http://forge.puppetlabs.com ...
     Installing -- do not interrupt ...
     /home/sbadia/openstack-campaign/modules
-    └─┬ puppetlabs-openstack (v2.0.0)
-      ├─┬ puppetlabs-cinder (v2.0.0)
-      │ ├── cprice404-inifile (v0.10.3)
-      │ ├── dprince-qpid (v1.0.1)
-      │ ├── puppetlabs-mysql (v0.8.1)
+    └─┬ puppetlabs-openstack (v2.1.0)
+      ├─┬ puppetlabs-cinder (v2.1.0)
+      │ ├── dprince-qpid (v1.0.2)
+      │ ├── puppetlabs-inifile (v1.0.0)
+      │ ├── puppetlabs-mysql (v0.9.0)
       │ ├─┬ puppetlabs-rabbitmq (v2.1.0)
       │ │ └── puppetlabs-apt (v1.2.0)
       │ └── puppetlabs-stdlib (v4.1.0)
-      ├── puppetlabs-glance (v2.0.0)
-      ├─┬ puppetlabs-horizon (v2.0.0)
-      │ ├─┬ puppetlabs-apache (v0.6.0)
-      │ │ └── puppetlabs-firewall (v0.3.1)
+      ├── puppetlabs-glance (v2.1.0)
+      ├─┬ puppetlabs-horizon (v2.1.0)
+      │ ├─┬ puppetlabs-apache (v0.9.0)
+      │ │ └── puppetlabs-concat (v1.0.0)
       │ └── saz-memcached (v2.1.0)
-      ├── puppetlabs-keystone (v2.0.0)
-      ├─┬ puppetlabs-nova (v2.0.0)
+      ├── puppetlabs-keystone (v2.1.0)
+      ├─┬ puppetlabs-nova (v2.1.0)
       │ └── duritong-sysctl (v0.0.1)
-      └─┬ puppetlabs-swift (v2.0.0)
+      ├─┬ puppetlabs-quantum (v2.1.1)
+      │ └── puppetlabs-vswitch (v0.1.1)
+      └─┬ puppetlabs-swift (v2.1.0)
         ├── puppetlabs-rsync (v0.1.0)
-        ├── puppetlabs-xinetd (v1.1.0)
+        ├── puppetlabs-xinetd (v1.2.0)
         ├── ripienaar-concat (v0.2.0)
         └── saz-ssh (v1.2.0)
+
+    » http_proxy=http://proxy:3128 $HOME/.gem/ruby/1.8/bin/puppet module upgrade puppetlabs/apache --version 0.6.0 --modulepath $(pwd)/modules
+    Downloading from http://forge.puppetlabs.com ...
+    Upgrading -- do not interrupt ...
+    /home/sbadia/openstack-campaign/modules
+    └─┬ puppetlabs-apache (v0.9.0 -> v0.6.0)
+      └── puppetlabs-firewall (v0.4.1)
+
     ```
 
 * Launch xp
