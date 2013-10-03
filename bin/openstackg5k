@@ -166,7 +166,7 @@ class Openstack
     Puppetg5k::clush_nodes(good)
     Puppetg5k::generate_site(good)
     Puppetg5k::autosign_puppet(good)
-    ctrl = nodes.shift
+    ctrl = [ nodes.shift ]
     Net::SSH::Multi.start(:on_error => :warn) do |session|
       good.each do |node|
         session.use "root@#{node}"
