@@ -166,7 +166,7 @@ class Openstack
     Puppetg5k::clush_nodes(good)
     Puppetg5k::generate_site(good)
     Puppetg5k::autosign_puppet(good)
-    ctrl = [ nodes.shift ]
+    ctrl = nodes.shift
     Net::SSH::Multi.start(:on_error => :warn) do |session|
       good.each do |node|
         session.use "root@#{node}"
@@ -177,9 +177,7 @@ class Openstack
         end
       end
       session.group :cloud do
-        ctrl.each do |ctr|
-          session.use "root@#{ctr}"
-        end
+        session.use "root@#{ctrl}"
       end
       # nexec(session, cmd, args = {:group => nil, :critical => true, :showerr => true, :showout => true})
       $log.info "(#{Openstackg5k::time_elapsed}s) Install curl,ntpdate,lvm2 packages..."
