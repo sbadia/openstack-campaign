@@ -105,7 +105,7 @@ class Openstack
     :short        => "-u URI",
     :long         => "--uri URI",
     :description  => "[auto] API Base URI (default: stable API)",
-    :default      => "https://api.grid5000.fr/stable/grid5000"
+    :default      => "https://api.grid5000.fr/stable"
 
   option :volumes,
     :short        => "-v",
