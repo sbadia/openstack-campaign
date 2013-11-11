@@ -257,7 +257,9 @@ class Openstack
       end
       Restfully::Session.new(:logger => $log, :cache => false, :base_uri => config[:base_uri]) do |root,rsession|
         site = root.sites[:"#{config[:site]}"]
-        if site.status.find{ |node| node['system_state'] == 'free' && node['hardware_state'] == 'alive' } then
+        # Status.find is a deprecated function of Grid5000 API 2.1 and below
+        #if site.status.find{ |node| node['system_state'] == 'free' && node['hardware_state'] == 'alive' } then
+        if ! site.status.nil?{ |node| node['hard'] == 'alive' && node['soft'] == 'free' } then
           rsession.logger.info "Job: #nodes => #{config[:nodes]}, type => {type='kavlan'}/vlan=1"
           new_job = site.jobs.submit(
             :resources => "{type='kavlan'}/vlan=1+/nodes=#{config[:nodes]},walltime=#{config[:walltime]}",
