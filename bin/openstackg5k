@@ -290,13 +290,13 @@ class Openstack
 
         $jobs.each do |job|
           next if job.reload['state'] != 'running'
-          $vlan = Openstackg5k::get_vlan_property(job['uid'])
-          rsession.logger.info "Deploy: env => #{deploy_env}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}"
+          $vlan = Openstackg5k::get_first_vlan_property(job['uid'])
+          rsession.logger.info "Deploy: env => #{deploy_env}, nodes => #{job["assigned_nodes"]}, vlan => #{$vlan.to_s}, key => #{File.read(config[:key])}"
           new_deploy = job.parent.deployments.submit(
-            :environment => deploy_env,
             :nodes => job['assigned_nodes'],
+            :environment => deploy_env,
             :key => File.read(config[:key]),
-            :vlan => $vlan.to_s,
+            :vlan => $vlan.to_s.strip,
             :disable_disk_partitioning => true
           ) rescue nil
           $deploy.push(new_deploy) unless new_deploy.nil?

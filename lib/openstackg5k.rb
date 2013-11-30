@@ -10,6 +10,18 @@ module Openstackg5k
   MSG_WARNING=1
   MSG_INFO=2
 
+  def get_first_vlan_property(jobid)
+    oarprop = nil
+    vlans = []
+    if not jobid.nil?
+      vlan =`/usr/bin/kavlan -V -j #{jobid.to_s}`
+    else
+      $log.error "bad arguments #{jobid}"
+      exit 1
+    end
+      return vlan.strip
+  end # def:: get_vlan_property(jobid)
+
   def get_vlan_property(jobid)
     oarprop = nil
     vlans = []
