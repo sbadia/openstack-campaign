@@ -14,8 +14,12 @@ class puppet::master inherits puppet {
   include 'mysql'
 
   package {
-    ['puppetmaster','libmysql-ruby','libactiverecord-ruby']:
+    ['libmysql-ruby','libactiverecord-ruby']:
       ensure => installed;
+  }
+
+  package { 'puppetmaster':
+    ensure => '3.3.1';
   }
 
   File['/etc/puppet/puppet.conf'] { source  => 'puppet:///modules/puppet/master/puppet.conf' }
